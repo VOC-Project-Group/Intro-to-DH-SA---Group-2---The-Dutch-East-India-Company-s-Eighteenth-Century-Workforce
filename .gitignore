@@ -1,0 +1,20 @@
+# === Python defaults ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+*.egg-info/
+*.egg
+*.log
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+
+# === Project-specific ===
+# Do not commit raw data CSVs
+data_raw/*
+
+# Ignore Jupyter auto-saves
+*.ipynb_checkpoints
