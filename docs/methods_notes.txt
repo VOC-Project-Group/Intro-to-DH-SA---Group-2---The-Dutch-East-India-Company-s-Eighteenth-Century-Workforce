@@ -1,0 +1,27 @@
+METHODS NOTES
+
+Scope and selection
+- We analyze contracts that begin between 1700 and 1780 inclusive because coverage is near complete in this period.
+- Earlier decades are fragmentary, and the final decades are less consistent due to chartered ships and foreign regiments.
+
+Origins and regions
+- We use the dataset’s nine region codes (A to I) to make analysis feasible and comparable with prior work.
+- We acknowledge possible misclassification from standardization and loss of local variation.
+- Percent of region == "0" (Unknown) after merging: TO_FILL_PERCENT
+
+Ranks
+- Detailed ranks are mapped to six parent categories and ordered into a numeric ladder that approximates seniority.
+- Unmapped ranks are reviewed and incorporated before final outputs.
+
+Outcomes
+- Raw reasons are grouped into four analytical outcome categories.
+- Ambiguous categories are flagged and can be handled in sensitivity checks.
+
+Dropped or missing
+- Rows dropped due to missing start dates: TO_FILL_N
+- Rows dropped when building modeling dataset: TO_FILL_N
+
+Reproducibility
+- Cleaning and analysis are scripted in notebooks/01_cleaning.py.
+- All outputs are saved in data_clean, tables, and figures.
+
