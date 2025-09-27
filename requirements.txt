@@ -3,4 +3,5 @@ numpy==1.26.4
 matplotlib==3.9.0
 statsmodels==0.14.2
 lifelines==0.27.8
+scikit-learn==1.5.1
 ipykernel==6.29.5
