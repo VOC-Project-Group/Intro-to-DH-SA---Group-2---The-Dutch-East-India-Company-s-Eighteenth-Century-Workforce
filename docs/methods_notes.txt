@@ -1,27 +1,30 @@
-METHODS NOTES
+**METHODS NOTES**
 
-Scope and selection
-- We analyze contracts that begin between 1700 and 1780 inclusive because coverage is near complete in this period.
-- Earlier decades are fragmentary, and the final decades are less consistent due to chartered ships and foreign regiments.
+**Scope and selection**
+* We analyze contracts that begin between 1700 and 1780 inclusive because coverage is near complete in this period.
+* Earlier decades are fragmentary, and the final decades are less consistent due to chartered ships and foreign regiments.
+* Rows dropped due to missing/invalid start dates when filtering: **159,657**.
 
-Origins and regions
-- We use the dataset’s nine region codes (A to I) to make analysis feasible and comparable with prior work.
-- We acknowledge possible misclassification from standardization and loss of local variation.
-- Percent of region == "0" (Unknown) after merging: TO_FILL_PERCENT
+**Origins and regions**
+* We use the dataset’s nine region codes (A-I) to make analysis feasible and comparable with prior work.
+* We acknowledge possible misclassification from standardization and loss of local variation.
+* **99.5%** of contracts contain a raw origin string; **82.7%** could be linked to a standardized region via the bridge.
+* “Unknown” regions reflect missing/ambiguous IDs in the bridge, not the absence of origin information.
 
-Ranks
-- Detailed ranks are mapped to six parent categories and ordered into a numeric ladder that approximates seniority.
-- Unmapped ranks are reviewed and incorporated before final outputs.
+**Ranks**
+* Detailed ranks are mapped to six parent categories and supplemented with a numeric ladder that approximates seniority.
+* Rank seniority is derived from median wage quintiles in _voc_ranks.csv_; ranks in the top two quintiles are classified as “high rank.”
 
-Outcomes
-- Raw reasons are grouped into four analytical outcome categories.
-- Ambiguous categories are flagged and can be handled in sensitivity checks.
+**Outcomes**
+* Raw reasons are grouped into four analytical outcome categories: _Death, Repatriated, Attrition_, and _Unknown_.
 
-Dropped or missing
-- Rows dropped due to missing start dates: TO_FILL_N
-- Rows dropped when building modeling dataset: TO_FILL_N
+**Dropped or missing**
+* Rows before filtering (as documented by the dataset): **774,200**.
+* Rows after filtering to 1700-1780: **614,543**.
+* Rows dropped when building the modeling dataset: **to be added after 03_models.py**.
 
-Reproducibility
-- Cleaning and analysis are scripted in notebooks/01_cleaning.py.
-- All outputs are saved in data_clean, tables, and figures.
+**Reproducibility**
+* Cleaning is scripted in _01_cleaning.py_. Descriptives are in _02_descriptives.py_. Modeling is in _03_models.py_.
+* Outputs are saved in _data_clean_, _tables_, and _figures_.
+* This file is automatically overwritten each run.
 
