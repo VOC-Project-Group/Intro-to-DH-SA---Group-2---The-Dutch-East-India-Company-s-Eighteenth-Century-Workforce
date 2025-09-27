@@ -1,15 +1,15 @@
 # Intro-to-DH-SA---Group-2---The-Dutch-East-India-Company-s-Eighteenth-Century-Workforce
 
-This repository contains our project files for the course Introduction to Digital Humanities & Social Analytics.  
-Our project investigates workforce patterns in the VOC (Dutch East India Company) during the eighteenth century, focusing on origins, ranks, and outcomes of contracts.
+This repository contains our project files for the course Introduction to Digital Humanities & Social Analytics.
+Our project investigates workforce patterns in the VOC (Dutch East India Company) during the eighteenth century, focusing on origins, ranks, and outcomes of contracts, and how these patterns may relate to the company’s decline.
 
 ## Folder structure
 - data_raw: original CSVs provided by the instructor. Not tracked by Git.
 - data_clean: smaller cleaned CSVs that we generate. Safe to commit.
-- notebooks: Python scripts used like notebooks for cleaning and analysis.
-- figures: exported charts used in the proposal and report.
-- tables: exported tables used in the proposal and report.
-- docs: codebook, methods notes, and small documentation files.
+- notebooks: Python scripts for cleaning, descriptives, and modeling.
+- figures: exported charts used in the report.
+- tables: exported tables used in the report.
+- docs: documentation files (codebook.md, methods_notes.txt, figure_captions.txt, etc.).
 
 ## Data sources (place files in data_raw)
 
