@@ -2,3 +2,6 @@ FIGURE CAPTIONS
 fig_region_by_rank_parent.png - Share of origin regions within each parent rank category.
 fig_rank_parent_by_outcome.png - Distribution of parent rank categories across contract outcomes.
 fig_trend_over_time.png - Foreign share, attrition rate, death rate, and share of high-ranking positions by decade.
+fig_death_vs_recruitment.png - Comparison of death rates and inflow of new recruits (first-time entrants) by decade.
+fig_rf_feature_importance.png - Random Forest: top features associated with contract outcomes.
+fig_rf_confusion_matrix.png - Random Forest: confusion matrix (actual vs predicted outcomes).
