@@ -7,7 +7,7 @@ Inputs:
 
 Outputs:
   - tables/*.csv  (crosstabs & trends)
-  - figures/*.png (3 plots)
+  - figures/*.png (4 plots)
   - docs/figure_captions.txt (overwritten)
 """
 
@@ -145,6 +145,43 @@ plt.savefig(fig3, dpi=180)
 plt.close()
 print(f"[saved] {fig3}")
 
+# ----- Recruitment inflow: unique new recruits per decade -----
+first_by_person = (
+    contracts[["person_cluster_id", "decade"]]
+    .dropna(subset=["person_cluster_id", "decade"])
+    .groupby("person_cluster_id", as_index=False)["decade"].min()
+    .rename(columns={"decade": "first_decade"})
+)
+new_workers_by_decade = (
+    first_by_person.groupby("first_decade").size().reset_index(name="new_workers")
+    .rename(columns={"first_decade": "decade"})
+)
+
+trend_extended = trend.merge(new_workers_by_decade, on="decade", how="left")
+trend_extended["new_workers"] = trend_extended["new_workers"].fillna(0).astype(int)
+
+# Save table
+trend_ext_path = os.path.join(TABLES, "trend_with_recruitment.csv")
+trend_extended.to_csv(trend_ext_path, index=False)
+print(f"[saved] {trend_ext_path}")
+
+# Plot: death rate vs new recruits
+plt.figure()
+plt.plot(trend_extended["decade"].to_numpy(),
+         trend_extended["death_rate"].to_numpy(),
+         marker="o", label="Death rate")
+plt.plot(trend_extended["decade"].to_numpy(),
+         (trend_extended["new_workers"] / 10000.0).to_numpy(),
+         marker="o", label="New recruits (scaled /10k)")
+plt.legend()
+plt.xlabel("Decade")
+plt.ylabel("Rate / Scaled count")
+plt.title("Deaths vs New Recruits by Decade")
+plt.tight_layout()
+fig_path = os.path.join(FIGURES, "fig_death_vs_recruitment.png")
+plt.savefig(fig_path, dpi=180)
+plt.close()
+print(f"[saved] {fig_path}")
 
 # ---------- Figure captions (overwrite each run) ----------
 caps = os.path.join(DOCS, "figure_captions.txt")
@@ -153,6 +190,7 @@ with open(caps, "w", encoding="utf-8") as f:
     f.write("fig_region_by_rank_parent.png - Share of origin regions within each parent rank category.\n")
     f.write("fig_rank_parent_by_outcome.png - Distribution of parent rank categories across contract outcomes.\n")
     f.write("fig_trend_over_time.png - Foreign share, attrition rate, death rate, and share of high-ranking positions by decade.\n")
+    f.write("fig_death_vs_recruitment.png - Comparison of death rates and inflow of new recruits (first-time entrants) by decade.\n")
 print(f"[saved] {caps}")
 
 print("[done] Descriptives complete.")
