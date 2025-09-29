@@ -5,7 +5,7 @@ Our project investigates workforce patterns in the VOC (Dutch East India Company
 
 ## Folder structure
 - data_raw: original CSVs provided by the instructor. Not tracked by Git.
-- data_clean: smaller cleaned CSVs that we generate. Safe to commit.
+- data_clean: smaller cleaned CSVs that we generate. Committed as a zip file due to GitHub's size restrictions.
 - notebooks: Python scripts for cleaning, descriptives, and modeling.
 - figures: exported charts used in the report.
 - tables: exported tables used in the report.
