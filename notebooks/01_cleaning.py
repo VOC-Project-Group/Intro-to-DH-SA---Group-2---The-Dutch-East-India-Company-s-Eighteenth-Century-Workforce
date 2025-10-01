@@ -1,98 +1,72 @@
 """
 01_cleaning.py
-Purpose: load the raw VOC data, clean it, standardize regions/ranks,
-and save one tidy dataset for the rest of the project.
-
-Inputs (in data_raw/):
-  - voc_persons_contracts.csv
-  - voc_places_standardized.csv
-  - voc_ranks.csv
+Purpose: clean VOC workforce dataset (contracts 1700-1780), standardize regions,
+map ranks, recode outcomes, and save ready-to-use outputs.
 
 Outputs:
-  - data_clean/contracts_clean.csv
-  - data_clean/persons_summary.csv
-  - docs/methods_notes.txt  (auto-written each run)
+- data_clean/contracts_clean.csv
+- data_clean/persons_summary.csv
+- tables/region_counts.csv
+- tables/rank_counts.csv
+- tables/outcome_counts.csv
+- docs/methods_notes.txt
 """
 
 import os, sys
 import numpy as np
 import pandas as pd
 
-# ---------- Paths ----------
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA_RAW   = os.path.join(BASE, "data_raw")
 DATA_CLEAN = os.path.join(BASE, "data_clean")
-TABLES     = os.path.join(BASE, "tables")          # descriptives will also write here
-FIGURES    = os.path.join(BASE, "figures")         # plots are made in 02_descriptives.py
+TABLES     = os.path.join(BASE, "tables")
 DOCS       = os.path.join(BASE, "docs")
 
-for p in [DATA_CLEAN, TABLES, FIGURES, DOCS]:
-    os.makedirs(p, exist_ok=True)
+os.makedirs(DATA_CLEAN, exist_ok=True)
+os.makedirs(TABLES, exist_ok=True)
+os.makedirs(DOCS, exist_ok=True)
 
-contracts_path = os.path.join(DATA_RAW, "voc_persons_contracts.csv")
-places_std_path = os.path.join(DATA_RAW, "voc_places_standardized.csv")
-ranks_path = os.path.join(DATA_RAW, "voc_ranks.csv")
-
-# ---------- Small helpers ----------
 def save_csv(df, path):
     df.to_csv(path, index=False)
-    print(f"[saved] {path}  rows={len(df)}")
+    print(f"[saved] {path}")
 
-def parse_date_ser(s):
-    """Parse a date column that might be YYYY-MM-DD or textual. Returns datetime or NaT."""
-    return pd.to_datetime(s, errors="coerce", dayfirst=False, utc=False)
-
-def to_int_like(s):  # nice safe converter for rank_id, etc.
-    try:
-        return s.astype("Int64")
-    except Exception:
-        return pd.to_numeric(s, errors="coerce").astype("Int64")
-
-# ---------- 1) Load raw ----------
-if not os.path.exists(contracts_path):
-    print(f"[error] Missing file: {contracts_path}"); sys.exit(1)
-if not os.path.exists(places_std_path):
-    print(f"[error] Missing file: {places_std_path}"); sys.exit(1)
-if not os.path.exists(ranks_path):
-    print(f"[error] Missing file: {ranks_path}"); sys.exit(1)
-
+# ---------- 1) Load contracts ----------
+print("[info] Loading contracts")
+contracts_path = os.path.join(DATA_RAW, "voc_persons_contracts.csv")
 contracts = pd.read_csv(contracts_path, low_memory=False)
-places_std = pd.read_csv(places_std_path, low_memory=False)
-ranks = pd.read_csv(ranks_path, low_memory=False)
-
-# ---------- 2) Basic cleaning & scope ----------
-# Contract start date
-if "date_begin_contract" in contracts.columns:
-    contracts["contract_start_date"] = parse_date_ser(contracts["date_begin_contract"])
-else:
-    contracts["contract_start_date"] = pd.NaT
-
-contracts["contract_start_year"] = contracts["contract_start_date"].dt.year
-
-# Keep 1700–1780 (inclusive)
 before = len(contracts)
-contracts = contracts[contracts["contract_start_year"].between(1700, 1780, inclusive="both")]
+
+# Filter 1700–1780 (based on contract start year)
+contracts["contract_start_year"] = pd.to_datetime(
+    contracts["date_begin_contract"], errors="coerce"
+).dt.year
+contracts = contracts[(contracts["contract_start_year"] >= 1700) & (contracts["contract_start_year"] <= 1780)]
 after = len(contracts)
-missing_start_dates = before - after
-print(f"[info] Filtered contracts to 1700–1780: {before} -> {after}")
+print(f"[info] Filtered contracts to 1700-1780: {before} -> {after}")
+save_csv(contracts, os.path.join(DATA_CLEAN, "contracts_filtered.csv"))
 
-# decade helper
-contracts["decade"] = (contracts["contract_start_year"] // 10) * 10
-
-# Keep a copy of raw origin text (useful for transparency)
+# Keep raw origin text for coverage reporting
 if "place_of_origin" in contracts.columns:
     contracts["place_of_origin_raw"] = contracts["place_of_origin"]
 else:
-    contracts["place_of_origin_raw"] = np.nan
+    contracts["place_of_origin_raw"] = pd.NA
 
-# ---------- 3) Merge standardized places to get 9-region scheme ----------
-print("[info] Merging places to region codes A-I")
+# ---------- 2) Load places ----------
+places_std_path = os.path.join(DATA_RAW, "voc_places_standardized.csv")
+if not os.path.exists(places_std_path):
+    print("[error] Missing voc_places_standardized.csv")
+    sys.exit(1)
+places_std = pd.read_csv(places_std_path, low_memory=False)
 
-expected_places_cols = ["place_standardized_id", "place_standardized", "region"]
-missing = [c for c in expected_places_cols if c not in places_std.columns]
-if missing:
-    print("[error] Standardized places file is missing:", missing)
-    print("Available:", places_std.columns.tolist()); sys.exit(1)
+# Load bridge file (place_id -> standardized)
+places_bridge_path = os.path.join(DATA_RAW, "voc_places.csv")
+if not os.path.exists(places_bridge_path):
+    print("[error] Missing voc_places.csv")
+    sys.exit(1)
+places_bridge = pd.read_csv(places_bridge_path, low_memory=False)
+
+# ---------- 3) Merge standardized places to regions ----------
+print("[info] Merging places to region codes A–I")
 
 REGION_LABELS = {
     "A": "Dutch Republic",
@@ -106,65 +80,90 @@ REGION_LABELS = {
     "I": "Eastern/Southeastern Europe",
 }
 
-# contracts has 'place_id' (provided by dataset) that connects to place_standardized_id
-if "place_id" not in contracts.columns:
-    print("[error] 'place_id' missing in contracts. Columns:", contracts.columns.tolist()); sys.exit(1)
-
-pl = places_std[["place_standardized_id", "place_standardized", "region"]].drop_duplicates().copy()
-pl["region_label"] = pl["region"].map(REGION_LABELS)
-
+# 1) contracts.place_id -> standardized id
 contracts = contracts.merge(
-    pl,
-    left_on="place_id",
-    right_on="place_standardized_id",
-    how="left"
+    places_bridge[["place_id", "place_standardized_id"]].drop_duplicates(),
+    on="place_id", how="left"
 )
 
-# Unknown label where merge failed
+# 2) standardized -> region and label
+pl_std = places_std[["place_standardized_id", "place_standardized", "region"]].drop_duplicates().copy()
+pl_std["region_label"] = pl_std["region"].map(REGION_LABELS)
+contracts = contracts.merge(pl_std, on="place_standardized_id", how="left")
+
+# Fill missing
 contracts["region"] = contracts["region"].fillna("U")
 contracts["region_label"] = contracts["region_label"].fillna("Unknown")
 
-# Dutch flag (strict = only A)
+# Conservative fallbacks: Dutch hints
+if "country_code" in contracts.columns:
+    cc_dutch = {"NL","NLD","Netherlands","NETHERLANDS","nl","Nl","Netherland"}
+    mask_cc = contracts["region_label"].eq("Unknown") & contracts["country_code"].astype(str).isin(cc_dutch)
+    contracts.loc[mask_cc, "region_label"] = "Dutch Republic"
+
+if "place_of_origin_raw" in contracts.columns:
+    dutch_terms = [
+        "amsterdam","rotterdam","delft","enkhuizen","hoorn","zeeland","holland",
+        "utrecht","gelderland","friesland","groningen","overijssel","drenthe",
+        "north holland","south holland","den haag","the hague","haarlem","middelburg","vlissingen"
+    ]
+    por = contracts["place_of_origin_raw"].astype(str).str.lower()
+    mask_txt = contracts["region_label"].eq("Unknown") & por.str.contains("|".join(dutch_terms), na=False)
+    contracts.loc[mask_txt, "region_label"] = "Dutch Republic"
+
 contracts["is_dutch"] = (contracts["region_label"] == "Dutch Republic").astype(int)
 
-# Coverage stats for notes
-has_any_origin_text = float(contracts["place_of_origin_raw"].notna().mean() * 100.0)
+# Coverage diagnostics
 matched_region = float((contracts["region_label"] != "Unknown").mean() * 100.0)
-print(f"[info] Region assigned for {matched_region:.1f}% of rows; raw origin text present in {has_any_origin_text:.1f}%.")
+if "place_of_origin_raw" in contracts.columns:
+    has_any_origin_text = float(contracts["place_of_origin_raw"].notna().mean() * 100.0)
+else:
+    has_any_origin_text = float("nan")
+txt_origin = f"{has_any_origin_text:.1f}%" if pd.notna(has_any_origin_text) else "n/a"
+print(f"[info] Region coverage after fallbacks: {matched_region:.1f}% (raw origin text present: {txt_origin})")
 
-# ---------- 4) Rank grouping & seniority ----------
+# Region counts
+region_counts = contracts["region_label"].value_counts(dropna=False).reset_index()
+region_counts.columns = ["region_label", "n_contracts"]
+save_csv(region_counts, os.path.join(TABLES, "region_counts.csv"))
+
+# ---------- 4) Map ranks ----------
 print("[info] Mapping ranks to 6 parent buckets and seniority")
+ranks_path = os.path.join(DATA_RAW, "voc_ranks.csv")
+ranks = pd.read_csv(ranks_path, low_memory=False)
 
-# Normalize column names a bit
-ranks.columns = ranks.columns.str.strip()
 contracts.columns = contracts.columns.str.strip()
-contracts["rank_id"] = to_int_like(contracts.get("rank_id"))
+ranks.columns = ranks.columns.str.strip()
 
-# Choose a high-level grouping present in ranks (category/parent_rank/subcategory)
+def to_int_like(s):
+    try:
+        return s.astype("Int64")
+    except Exception:
+        return pd.to_numeric(s, errors="coerce").astype("Int64")
+
+contracts["rank_id"] = to_int_like(contracts.get("rank_id"))
+ranks["rank_id"] = to_int_like(ranks.get("rank_id"))
+
 use_col = None
-for c in ["category", "parent_rank", "subcategory"]:
+for c in ["category","parent_rank","subcategory"]:
     if c in ranks.columns:
         use_col = c; break
 
 if use_col and "rank_id" in ranks.columns:
     ranks_min = ranks[["rank_id", use_col]].drop_duplicates()
-    ranks_min.columns = ["rank_id", "rank_group_raw"]
-    contracts = contracts.merge(ranks_min, on="rank_id", how="left")
+    ranks_min.columns = ["rank_id","rank_group_raw"]
+    contracts = contracts.merge(ranks_min,on="rank_id",how="left")
 else:
     contracts["rank_group_raw"] = np.nan
 
 contracts["rank_group_raw"] = contracts["rank_group_raw"].astype(str).str.upper()
 
 RAW_TO_PARENT = {
-    "SEA": "Sea",
-    "SHIP": "Ship",
-    "TRADE": "Trade",
-    "MEDICAL": "Medical",
-    "MILITARY": "Military",
-    "OTHER": "Other",
+    "SEA":"Sea","SHIP":"Ship","TRADE":"Trade","MEDICAL":"Medical",
+    "MILITARY":"Military","OTHER":"Other"
 }
 def map_parent(x):
-    if pd.isna(x) or x == "NAN": return np.nan
+    if pd.isna(x) or x=="NAN": return np.nan
     if x in RAW_TO_PARENT: return RAW_TO_PARENT[x]
     xl = str(x).lower()
     if "sea" in xl: return "Sea"
@@ -176,44 +175,44 @@ def map_parent(x):
 
 contracts["rank_parent"] = contracts["rank_group_raw"].apply(map_parent).fillna("Unknown")
 
-# Merge median wage and build rank_level from quintiles (1..5)
+# Wage ladder
 wage_col = None
 ranks_cols_lower = {c.lower(): c for c in ranks.columns}
-for cand in ["median_wage", "median wage", "median_wage_eur"]:
-    if cand in ranks_cols_lower:
-        wage_col = ranks_cols_lower[cand]; break
-
-if wage_col is not None and "rank_id" in ranks.columns:
-    wage_min = ranks[["rank_id", wage_col]].drop_duplicates().rename(columns={wage_col: "median_wage"})
-    contracts = contracts.merge(wage_min, on="rank_id", how="left")
+for cand in ["median_wage","median wage","median_wage_eur"]:
+    if cand in ranks_cols_lower: wage_col = ranks_cols_lower[cand]; break
+if wage_col is not None:
+    wage_min = ranks[["rank_id",wage_col]].drop_duplicates().rename(columns={wage_col:"median_wage"})
+    contracts = contracts.merge(wage_min,on="rank_id",how="left")
 else:
     contracts["median_wage"] = np.nan
 
 wages = contracts["median_wage"].dropna()
 if len(wages) >= 5:
-    q = wages.quantile([0.2, 0.4, 0.6, 0.8]).to_dict()
+    q = wages.quantile([0.2,0.4,0.6,0.8]).to_dict()
     def wage_to_level(x):
         if pd.isna(x): return np.nan
-        if x <= q[0.2]: return 1
-        if x <= q[0.4]: return 2
-        if x <= q[0.6]: return 3
-        if x <= q[0.8]: return 4
+        if x<=q[0.2]: return 1
+        if x<=q[0.4]: return 2
+        if x<=q[0.6]: return 3
+        if x<=q[0.8]: return 4
         return 5
     contracts["rank_level"] = contracts["median_wage"].apply(wage_to_level)
 else:
-    # Coarse fallback if wages are missing
-    fallback = {"Ship": 2, "Sea": 2, "Military": 3, "Trade": 4, "Medical": 4, "Other": 2, "Unknown": 2}
+    fallback = {"Ship":2,"Sea":2,"Military":3,"Trade":4,"Medical":4,"Other":2,"Unknown":2}
     contracts["rank_level"] = contracts["rank_parent"].map(fallback)
 
-contracts["is_high_rank"] = (contracts["rank_level"] >= 4).astype(float)
+contracts["is_high_rank"] = (contracts["rank_level"]>=4).astype(float)
 
-# ---------- 5) Outcome recoding ----------
+rank_counts = contracts["rank_parent"].value_counts(dropna=False).reset_index()
+rank_counts.columns = ["rank_parent","n_contracts"]
+save_csv(rank_counts, os.path.join(TABLES, "rank_counts.csv"))
+
+# ---------- 5) Outcomes ----------
 print("[info] Recoding outcomes")
 reason_col = "reason_end_contract" if "reason_end_contract" in contracts.columns else None
 contracts["reason_end_contract_raw"] = contracts[reason_col] if reason_col else np.nan
-
 def map_outcome(text):
-    if pd.isna(text): return np.nan
+    if pd.isna(text): return "Unknown"
     t = str(text).strip().lower()
     if " chamber" in t: return "Unknown"
     if any(k in t for k in ["deceased","died","death","shipwreck","execut","murder"]): return "Death"
@@ -221,56 +220,47 @@ def map_outcome(text):
     if any(k in t for k in ["repatriat","returned home","homebound","free citizen","back to"]): return "Repatriated"
     if any(k in t for k in ["missing","last record","unknown","not recorded","no further record","age"]): return "Unknown"
     return "Unknown"
-
 contracts["outcome_group"] = contracts["reason_end_contract_raw"].apply(map_outcome)
 
-# ---------- 6) Person-level summary ----------
-if "person_cluster_id" in contracts.columns:
-    persons_summary = (
-        contracts[["person_cluster_id","decade"]]
-        .groupby("person_cluster_id", as_index=False)
-        .agg(first_decade=("decade","min"), contracts_n=("decade","count"))
-    )
-    save_csv(persons_summary, os.path.join(DATA_CLEAN, "persons_summary.csv"))
+outcome_counts = contracts["outcome_group"].value_counts().reset_index()
+outcome_counts.columns = ["outcome_group","n_contracts"]
+save_csv(outcome_counts, os.path.join(TABLES, "outcome_counts.csv"))
 
-# ---------- 7) Save cleaned dataset ----------
-save_csv(contracts, os.path.join(DATA_CLEAN, "contracts_clean.csv"))
+# -------------------- Mark first contracts --------------------
+if "is_first_contract" not in contracts.columns:
+    if "person_cluster_id" in contracts.columns and "date_begin_contract" in contracts.columns:
+        # Convert dates
+        contracts["date_begin_contract"] = pd.to_datetime(contracts["date_begin_contract"], errors="coerce")
 
-# ---------- 8) Methods notes (auto-written) ----------
-def fmt_int(x:int) -> str:
-    try: return f"{int(x):,}"
-    except: return str(x)
+        # Find earliest contract per person
+        first_dates = (
+            contracts.groupby("person_cluster_id")["date_begin_contract"]
+            .transform("min")
+        )
 
-notes_path = os.path.join(DOCS, "methods_notes.txt")
-with open(notes_path, "w", encoding="utf-8") as f:
-    f.write("**METHODS NOTES**\n\n")
-    f.write("**Scope and selection**\n")
-    f.write("* We analyze contracts that begin between 1700 and 1780 inclusive because coverage is near complete in this period.\n")
-    f.write("* Earlier decades are fragmentary, and the final decades are less consistent due to chartered ships and foreign regiments.\n")
-    f.write(f"* Rows dropped due to missing/invalid start dates when filtering: **{fmt_int(missing_start_dates)}**.\n\n")
+        # Flag first contracts correctly
+        contracts["is_first_contract"] = (contracts["date_begin_contract"] == first_dates).astype(int)
+    else:
+        # Fallback if we really cannot do better
+        contracts["is_first_contract"] = 0
 
-    f.write("**Origins and regions**\n")
-    f.write("* We use the dataset’s nine region codes (A-I) to make analysis feasible and comparable with prior work.\n")
-    f.write("* We acknowledge possible misclassification from standardization and loss of local variation.\n")
-    f.write(f"* **{has_any_origin_text:.1f}%** of contracts contain a raw origin string; **{matched_region:.1f}%** could be linked to a standardized region via the bridge.\n")
-    f.write("* “Unknown” regions reflect missing/ambiguous IDs in the bridge, not absence of origin information.\n\n")
 
-    f.write("**Ranks**\n")
-    f.write("* Detailed ranks are mapped to six parent categories and supplemented with a numeric ladder that approximates seniority.\n")
-    f.write("* Rank seniority is derived from median wage quintiles in _voc_ranks.csv_; ranks in the top two quintiles are classified as “high rank.”\n\n")
+# ---------- 6) Save outputs ----------
+save_csv(contracts, os.path.join(DATA_CLEAN,"contracts_clean.csv"))
 
-    f.write("**Outcomes**\n")
-    f.write("* Raw reasons are grouped into four analytical outcome categories: _Death, Repatriated, Attrition_, and _Unknown_.\n\n")
+# Methods notes
+notes_path = os.path.join(DOCS,"methods_notes.txt")
+with open(notes_path,"w",encoding="utf-8") as f:
+    f.write("METHODS NOTES\n\n")
+    f.write("Scope and selection\n")
+    f.write(f"- Filtered contracts to 1700–1780: {before:,} → {after:,}\n")
+    f.write("\nOrigins and regions\n")
+    f.write(f"- Raw origin coverage: {txt_origin}\n")
+    f.write(f"- Region coverage after fallbacks: {matched_region:.1f}%\n")
+    f.write("\nRanks\n")
+    f.write("- Ranks mapped to 6 parent categories; seniority derived from wage quintiles.\n")
+    f.write("\nOutcomes\n")
+    f.write("- Outcomes grouped into: Death / Repatriated / Attrition / Unknown.\n")
+print(f"[updated] {notes_path}")
 
-    f.write("**Dropped or missing**\n")
-    f.write("* Rows before filtering (as documented by the dataset): **774,200**.\n")
-    f.write(f"* Rows after filtering to 1700-1780: **{fmt_int(len(contracts))}**.\n")
-    f.write("* Rows dropped when building the modeling dataset: **to be added after 03_models.py**.\n\n")
-
-    f.write("**Reproducibility**\n")
-    f.write("* Cleaning is scripted in _01_cleaning.py_. Descriptives are in _02_descriptives.py_. Modeling is in _03_models.py_.\n")
-    f.write("* Outputs are saved in _data_clean_, _tables_, and _figures_.\n")
-    f.write("* This file is automatically overwritten each run.\n")
-
-print(f"[saved] {notes_path}")
 print("[done] Cleaning complete.")
