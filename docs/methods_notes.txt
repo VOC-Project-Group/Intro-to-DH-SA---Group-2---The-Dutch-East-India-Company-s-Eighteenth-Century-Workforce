@@ -1,29 +1,14 @@
 METHODS NOTES
 
 Scope and selection
-We analyze contracts that begin between 1700 and 1780 inclusive because coverage is near complete in this period.
-Earlier decades are fragmentary, and the final decades are less consistent due to chartered ships and foreign regiments.
-Rows dropped due to missing/invalid start dates when filtering: 159,657.
+- Filtered contracts to 1700–1780: 774,200 → 676,934
 
 Origins and regions
-We use the dataset's nine region codes (A-I) to make analysis feasible and comparable with prior work.
-We acknowledge possible misclassification from standardization and loss of local variation.
-99.5% of contracts contain a raw origin string; 82.7% could be linked to a standardized region via the bridge.
-“Unknown” regions reflect missing/ambiguous IDs in the bridge, not absence of origin information.
+- Raw origin coverage: 99.5%
+- Region coverage after fallbacks: 81.6%
 
 Ranks
-Detailed ranks are mapped to six parent categories and supplemented with a numeric ladder that approximates seniority.
-Rank seniority is derived from median wage quintiles in voc_ranks.csv; ranks in the top two quintiles are classified as “high rank.”
+- Ranks mapped to 6 parent categories; seniority derived from wage quintiles.
 
 Outcomes
-Raw reasons are grouped into four analytical outcome categories: Death, Repatriated, Attrition, and Unknown.
-
-Dropped or missing
-Rows before filtering (as documented by the dataset): 774,200.
-Rows after filtering to 1700-1780: 614,543.
-Rows dropped when building the modeling dataset: 0 (cleaned=614543, after target filter=614543, after dropping NA in features/target=614543).
-
-Reproducibility
-Cleaning is scripted in 01_cleaning.py. Descriptives are in 02_descriptives.py. Modeling is in 03_models.py.
-Outputs are saved in data_clean, tables, and figures.
-This file is automatically overwritten each run.
+- Outcomes grouped into: Death / Repatriated / Attrition / Unknown.

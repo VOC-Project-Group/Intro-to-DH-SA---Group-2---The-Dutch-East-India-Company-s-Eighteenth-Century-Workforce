@@ -1,7 +1,19 @@
-FIGURE CAPTIONS
 fig_region_by_rank_parent.png - Share of origin regions within each parent rank category.
 fig_rank_parent_by_outcome.png - Distribution of parent rank categories across contract outcomes.
 fig_trend_over_time.png - Foreign share, attrition rate, death rate, and share of high-ranking positions by decade.
-fig_death_vs_recruitment.png - Comparison of death rates and inflow of new recruits (first-time entrants) by decade.
+fig_death_vs_recruitment.png - Comparison of death rate and inflow of new recruits (first-time entrants) by decade.
+fig_death_vs_recruitment_by_rank.png - Death rate vs recruitment share by parent rank (all decades).
+fig_death_vs_recruitment_by_rank_1700s.png - Death rate vs recruitment share by parent rank in the 1700s.
+fig_death_vs_recruitment_by_rank_1710s.png - Death rate vs recruitment share by parent rank in the 1710s.
+fig_death_vs_recruitment_by_rank_1720s.png - Death rate vs recruitment share by parent rank in the 1720s.
+fig_death_vs_recruitment_by_rank_1730s.png - Death rate vs recruitment share by parent rank in the 1730s.
+fig_death_vs_recruitment_by_rank_1740s.png - Death rate vs recruitment share by parent rank in the 1740s.
+fig_death_vs_recruitment_by_rank_1750s.png - Death rate vs recruitment share by parent rank in the 1750s.
+fig_death_vs_recruitment_by_rank_1760s.png - Death rate vs recruitment share by parent rank in the 1760s.
+fig_death_vs_recruitment_by_rank_1770s.png - Death rate vs recruitment share by parent rank in the 1770s.
+fig_death_vs_recruitment_by_rank_1780s.png - Death rate vs recruitment share by parent rank in the 1780s.
+fig_logit_confusion_matrix.png - Logistic Regression: confusion matrix (actual vs predicted outcomes).
 fig_rf_feature_importance.png - Random Forest: top features associated with contract outcomes.
 fig_rf_confusion_matrix.png - Random Forest: confusion matrix (actual vs predicted outcomes).
+fig_outcome_trends_by_rank.png - Outcome rates (Attrition, Death, Repatriated, Unknown) over decades, shown per rank (small multiples).
+fig_outcome_trends_plus_recruitment_by_rank.png - Per-rank outcome rates (within rank & decade) with recruitment share (across ranks per decade).
