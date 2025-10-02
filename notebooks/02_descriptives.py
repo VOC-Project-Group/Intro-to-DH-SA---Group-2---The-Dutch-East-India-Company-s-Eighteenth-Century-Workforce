@@ -342,6 +342,155 @@ for dec in decades:
     plt.close(fig)
     print(f"[saved] {outp}")
 
+# -------------------- NEW (updated): Outcome rates + recruitment by decade (small multiples by rank) --------------------
+# This produces one figure with panels per rank. Each panel shows:
+#   - Lines for outcome rates within the rank & decade (Attrition/Death/Repatriated/Unknown) -> each is n_outcome / n_contracts for that (decade, rank)
+#   - One extra line for RECRUITMENT SHARE of that rank in that decade -> recruits_in_rank_decade / total_recruits_in_decade (across all ranks)
+#
+# NOTE: Outcome rates are normalized *within rank & decade*; Recruitment is normalized *across ranks within the decade*.
+# Both are 0..1, but denominators differ — that’s intentional for comparing loss burden vs where recruitment concentrated.
+
+OUTCOME_ORDER = ["Attrition", "Death", "Repatriated", "Unknown"]
+_ranks_present = sorted(contracts["rank_parent"].dropna().unique().tolist())
+RANKS_FOR_FACETS = [r for r in RANK_ORDER if r in _ranks_present] or _ranks_present
+
+# --- 1) Base tidy table: counts by decade × rank × outcome
+base = (
+    contracts
+    .dropna(subset=["decade", "rank_parent", "outcome_group"])
+    .groupby(["decade", "rank_parent", "outcome_group"], as_index=False)
+    .size()
+    .rename(columns={"size": "n_outcome"})
+)
+
+# total contracts per (decade, rank) for within-group rates
+tot_rank_dec = (
+    contracts
+    .dropna(subset=["decade", "rank_parent"])
+    .groupby(["decade", "rank_parent"], as_index=False)
+    .size()
+    .rename(columns={"size": "n_contracts_rank_dec"})
+)
+rates_long = base.merge(tot_rank_dec, on=["decade", "rank_parent"], how="left")
+rates_long["rate"] = rates_long["n_outcome"] / rates_long["n_contracts_rank_dec"].replace(0, np.nan)
+
+# tidy categories
+rates_long["outcome_group"] = pd.Categorical(rates_long["outcome_group"], categories=OUTCOME_ORDER, ordered=True)
+rates_long["rank_parent"] = pd.Categorical(rates_long["rank_parent"], categories=RANKS_FOR_FACETS, ordered=True)
+
+# --- 2) Recruitment share per (decade, rank)
+# Recruits = is_first_contract == 1
+recr_rank_dec = (
+    contracts
+    .dropna(subset=["decade", "rank_parent"])
+    .groupby(["decade", "rank_parent"], as_index=False)
+    .agg(recruits_n=("is_first_contract", lambda s: int((s == 1).sum())))
+)
+recr_by_dec = (
+    recr_rank_dec
+    .groupby("decade", as_index=False)["recruits_n"].sum()
+    .rename(columns={"recruits_n": "recruits_total_dec"})
+)
+recr_rank_dec = recr_rank_dec.merge(recr_by_dec, on="decade", how="left")
+recr_rank_dec["recruitment_share"] = (
+    recr_rank_dec["recruits_n"] / recr_rank_dec["recruits_total_dec"].replace(0, np.nan)
+)
+
+# --- 3) Save a wide CSV: outcome rates + recruitment share
+# Pivot outcome rates to columns, then attach recruitment share
+rates_wide = (
+    rates_long
+    .pivot_table(index=["decade", "rank_parent"], columns="outcome_group", values="rate", fill_value=0.0)
+    .reset_index()
+    .rename_axis(None, axis=1)
+)
+rates_wide = rates_wide.merge(
+    recr_rank_dec[["decade", "rank_parent", "recruitment_share"]],
+    on=["decade", "rank_parent"], how="left"
+).fillna({"recruitment_share": 0.0})
+
+save_csv(rates_wide, os.path.join(TABLES, "outcome_rates_and_recruitment_by_decade_rank.csv"))
+
+# --- 4) Plot: small multiples by rank (lines: outcomes + recruitment share)
+import math
+n = len(RANKS_FOR_FACETS)
+if n == 0:
+    print("[warn] No ranks to plot for outcome + recruitment trends.")
+else:
+    ncols = 3
+    nrows = int(math.ceil(n / ncols))
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(11.5, 3.6*nrows), sharex=True, sharey=True)
+    if not isinstance(axes, np.ndarray):
+        axes = np.array([axes])
+    axes = axes.flatten()
+
+    global_handles, global_labels = None, None
+
+    for i, rank in enumerate(RANKS_FOR_FACETS):
+        ax = axes[i]
+        # outcomes
+        sub = rates_long[rates_long["rank_parent"] == rank].copy()
+        # recruitment (for this rank)
+        rr = recr_rank_dec[recr_rank_dec["rank_parent"] == rank].copy()
+
+        if sub.empty and rr.empty:
+            ax.set_visible(False)
+            continue
+
+        # X axis sorted
+        if not sub.empty:
+            sub["decade"] = pd.to_numeric(sub["decade"], errors="coerce")
+            sub = sub.sort_values(["decade", "outcome_group"])
+        if not rr.empty:
+            rr["decade"] = pd.to_numeric(rr["decade"], errors="coerce")
+            rr = rr.sort_values("decade")
+
+        # draw outcome lines (one per outcome)
+        for og in OUTCOME_ORDER:
+            ss = sub[sub["outcome_group"] == og]
+            if ss.empty: 
+                continue
+            ax.plot(ss["decade"].to_numpy(), ss["rate"].to_numpy(), marker="o", label=og)
+
+        # draw recruitment share line
+        if not rr.empty:
+            ax.plot(rr["decade"].to_numpy(), rr["recruitment_share"].to_numpy(),
+                    marker="s", linestyle="--", linewidth=2, label="Recruitment share")
+
+        ax.set_title(str(rank))
+        ax.set_ylim(0.0, 1.0)
+        if i % ncols == 0:
+            ax.set_ylabel("Rate / Share")
+        if i >= (nrows - 1) * ncols:
+            ax.set_xlabel("Decade")
+
+        # pick legend entries once from first visible panel
+        if global_handles is None:
+            global_handles, global_labels = ax.get_legend_handles_labels()
+
+    # Hide any unused axes
+    for j in range(i+1, len(axes)):
+        axes[j].set_visible(False)
+
+    fig.suptitle("Outcome rates and recruitment share by decade — small multiples by rank", y=0.995)
+
+    # one global legend outside on the right
+    if global_handles:
+        leg = fig.legend(global_handles, global_labels, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
+        plt.subplots_adjust(right=0.80)
+
+    plt.tight_layout()
+    out_path = os.path.join(FIGURES, "fig_outcome_trends_plus_recruitment_by_rank.png")
+    fig.savefig(out_path, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[saved] {out_path}")
+
+    # Caption (dedup)
+    caps = os.path.join(DOCS, "figure_captions.txt")
+    append_caption_once(
+        caps,
+        "fig_outcome_trends_plus_recruitment_by_rank.png - Per-rank outcome rates (within rank & decade) with recruitment share (across ranks per decade)."
+    )
 
 
 # -------------------- Figure captions (no duplicates) --------------------

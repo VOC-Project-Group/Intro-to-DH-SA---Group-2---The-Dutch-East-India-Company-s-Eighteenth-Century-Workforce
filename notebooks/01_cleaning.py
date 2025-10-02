@@ -40,10 +40,32 @@ before = len(contracts)
 contracts["contract_start_year"] = pd.to_datetime(
     contracts["date_begin_contract"], errors="coerce"
 ).dt.year
-contracts = contracts[(contracts["contract_start_year"] >= 1700) & (contracts["contract_start_year"] <= 1780)]
+contracts = contracts[(contracts["contract_start_year"] >= 1700) & (contracts["contract_start_year"] < 1790)]
 after = len(contracts)
 print(f"[info] Filtered contracts to 1700-1780: {before} -> {after}")
 save_csv(contracts, os.path.join(DATA_CLEAN, "contracts_filtered.csv"))
+
+# After filtering the contracts, we want to double-check that the number of contracts
+# per decade looks reasonable. This helps catch mistakes like accidentally dropping years.
+
+dec_counts = (
+    contracts
+    .assign(decade=(contracts["contract_start_year"] // 10) * 10)  # compute decade (e.g. 1785 -> 1780)
+    .groupby("decade")
+    .size()
+)
+
+print("[diag] contracts by decade:\n", dec_counts)
+
+# Extra safety check: if the number of contracts in the last decade
+# is much smaller than the previous one, it may mean we cut the data too early.
+if len(dec_counts) >= 3:  # only check if we have at least 3 decades
+    last = dec_counts.iloc[-1]
+    prev = dec_counts.iloc[-2]
+    if last < 0.3 * prev:  # if the final decade is less than 30% of the previous one
+        print("[warn] Final decade count is much smaller than the previous decade.")
+        print("       This could mean the upper bound of the filter is excluding data.")
+
 
 # Keep raw origin text for coverage reporting
 if "place_of_origin" in contracts.columns:
