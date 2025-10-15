@@ -80,7 +80,6 @@ The figures summarize the main findings of the analysis:
 Each figure is listed in docs/figure_captions.txt in addition to the other figures we created throughout the project.
 
 ## Authors - Group 2
-
-Feruza Bakhtiyorova (Artificial Intelligence) - Data preparation, analysis, modeling, and methodology writing
-Dunya Boon (Communication) - Literature research, historical context, editing, and citations
-Emily Li (History and Sociology) - Literature research, sustainability focus, and report structure
+1. Feruza Bakhtiyorova (Artificial Intelligence) - Data preparation, analysis, modeling, and methodology writing
+2. Dunya Boon (Communication) - Literature research, historical context, editing, and citations
+3. Emily Li (History and Sociology) - Literature research, sustainability focus, and report structure
