@@ -1,11 +1,26 @@
 # Intro-to-DH-SA---Group-2---The-Dutch-East-India-Company-s-Eighteenth-Century-Workforce
 
-This repository contains our project files for the course Introduction to Digital Humanities & Social Analytics.
-Our project investigates workforce patterns in the VOC (Dutch East India Company) during the eighteenth century, focusing on origins, ranks, and outcomes of contracts, and how these patterns may relate to the company’s decline.
+This repository contains our project files for the course Introduction to Digital Humanities & Social Analytics (taught by Lorella Viola at VU Amsterdam).
+Our project examines workforce patterns within the VOC (Dutch East India Company) during the eighteenth century (1700-1780), with a focus on the relationships between origins, ranks, and contract outcomes. The analysis explores whether internal workforce dynamics reveal early structural weaknesses that may have contributed to the company’s eventual decline.
 
-## Folder structure
+## Project overview
+
+We analyzed a subset of the dataset “The Dutch East India Company’s Eighteenth-Century Workforce: an Enriched Data Collection” (Petram et al., 2024), produced by the Huygens Institute and the KNAW Humanities Cluster.
+This dataset refines more than 770,000 muster records of VOC employees (1633–1794) into approximately 460,000 identified individuals, standardizing places of origin, ranks, and wages.
+Focusing on the eighteenth century (1700–1780), our analysis explored patterns in workforce composition by region of origin, rank structure, and contract outcomes such as Death, Repatriated, Attrition, and Unknown.
+Using descriptive statistics and predictive models (Logistic Regression and Random Forest), we tested whether recruitment and attrition patterns reveal internal workforce imbalances that led to the VOC’s decline.
+
+## Main findings
+
+- Death and attrition rates remained persistently high across the eighteenth century.
+- Recruitment did not match the ranks with the highest losses.
+- Rank and region were the strongest predictors of contract outcomes.
+- The VOC’s workforce system appears structurally imbalanced, reflecting internal fragility during its decline.
+
+## Repository structure
+
 - data_raw: original CSVs provided by the instructor. Not tracked by Git.
-- data_clean: smaller cleaned CSVs that we generate. Committed as a zip file due to GitHub's size restrictions.
+- data_clean: smaller cleaned CSVs that we generate.
 - notebooks: Python scripts for cleaning, descriptives, and modeling.
 - figures: exported charts used in the report.
 - tables: exported tables used in the report.
@@ -25,11 +40,47 @@ We do not commit them to Git because of size.
 - voc_names.csv              → name clusters and disambiguation
 - voc_beneficiaries.csv      → beneficiaries listed in contracts
 
+## Scripts and Reproducibility
+The entire analysis is reproducible through three sequential Python scripts:
+1. 01_cleaning.py - filters data (1700–1780), maps regions and ranks, creates derived variables
+2. 02_descriptives.py - produces descriptive statistics and figures
+3. 03_models.py - runs Logistic Regression and Random Forest models, generates feature importance and confusion matrices
+
 ## How to run
 1. Create a virtual environment.
    - python -m venv .venv
    - source .venv/bin/activate  (Windows: .venv\Scripts\activate)
    - pip install -r requirements.txt
-3. Put the raw CSV files into data_raw.
-4. Run: python notebooks/01_cleaning.py
-5. Outputs appear in data_clean, tables, and figures.
+2. Put the raw CSV files into data_raw.
+3. Run: python notebooks/01_cleaning.py
+4. Outputs appear in data_clean, tables, and figures.
+
+## Dependencies
+See requirements.txt for exact versions.
+Main libraries: pandas, numpy, matplotlib, scikit-learn, statsmodels, lifelines.
+
+## **Documentation**
+- `docs/codebook.md` - variable definitions and coding details  
+- `docs/methods_notes.txt` - detailed notes on preprocessing and modeling decisions  
+- `docs/model_notes.txt` - model results, evaluation metrics, and confusion matrices  
+- `docs/figure_captions.txt` - figure summaries and interpretations  
+- `docs/workflow_documentation.pdf` *(to be added)* - full workflow documentation (currently in preparation for submission)
+
+## About the Figures
+
+The figures summarize the main findings of the analysis:
+- fig_region_by_rank_parent.png - distribution of worker origins across rank categories
+- fig_death_vs_recruitment_by_decade.png - comparison of death and recruitment rates per decade
+- fig_death_vs_recruitment_by_rank.png - death and recruitment patterns across rank types
+- fig_outcome_trends_plus_recruitment_by_rank.png - decade-by-decade panel view showing outcomes and recruitment share for each rank
+- fig_logit_confusion_matrix.png - model evaluation for Logistic Regression
+- fig_rf_feature_importance.png - key variables influencing outcomes in the Random Forest model
+- fig_rf_confusion_matrix.png - performance of the Random Forest model compared with actual outcomes
+
+Each figure is listed in docs/figure_captions.txt in addition to the other figures we created throughout the project.
+
+## Authors - Group 2
+
+Feruza Bakhtiyorova (Artificial Intelligence) - Data preparation, analysis, modeling, and methodology writing
+Dunya Boon (Communication) - Literature research, historical context, editing, and citations
+Emily Li (History and Sociology) - Literature research, sustainability focus, and report structure
