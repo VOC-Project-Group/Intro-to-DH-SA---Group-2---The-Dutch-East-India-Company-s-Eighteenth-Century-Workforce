@@ -19,12 +19,12 @@ Using descriptive statistics and predictive models (Logistic Regression and Rand
 
 ## Repository structure
 
-- data_raw: original CSVs provided by the instructor. Not tracked by Git.
-- data_clean: smaller cleaned CSVs that we generate.
-- notebooks: Python scripts for cleaning, descriptives, and modeling.
+- data_raw: original CSVs provided by the instructor. Not tracked by Git due to size.
+- data_clean: smaller processed(cleaned) CSVs that we generate. Not tracked by Git due to size.
+- notebooks: Python scripts for processing(cleaning), descriptives, and modeling.
 - figures: exported charts used in the report.
 - tables: exported tables used in the report.
-- docs: documentation files (codebook.md, methods_notes.txt, figure_captions.txt, etc.).
+- docs: documentation files (workflow_documentation.pdf, codebook.md, methods_notes.txt, etc.).
 
 ## Data sources (place files in data_raw)
 
@@ -60,11 +60,12 @@ See requirements.txt for exact versions.
 Main libraries: pandas, numpy, matplotlib, scikit-learn, statsmodels, lifelines.
 
 ## **Documentation**
-- `docs/codebook.md` - variable definitions and coding details  
-- `docs/methods_notes.txt` - detailed notes on preprocessing and modeling decisions  
-- `docs/model_notes.txt` - model results, evaluation metrics, and confusion matrices  
-- `docs/figure_captions.txt` - figure summaries and interpretations  
-- `docs/workflow_documentation.pdf` *(to be added)* - full workflow documentation (currently in preparation for submission)
+- `docs/workflow_documentation.pdf` - full workflow documentation
+- `docs/codebook.md` - variable definitions and coding details
+- `docs/methods_notes.txt` - detailed notes on preprocessing and modeling decisions
+- `docs/model_notes.txt` - model results, evaluation metrics, and confusion matrices
+- `docs/figure_captions.txt` - figure summaries and interpretations
+- `docs/VOC_Methodology_Summary.pdf` - methodology and figures overview
 
 ## About the Figures
 
