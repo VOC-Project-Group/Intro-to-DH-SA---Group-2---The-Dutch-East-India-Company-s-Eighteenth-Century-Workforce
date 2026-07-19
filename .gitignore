@@ -8,17 +8,24 @@ env/
 *.egg
 *.log
 
-# === OS files ===
+# === OS/editor files ===
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
 
-# === Project-specific ===
-# Do not commit raw data CSVs
+# === Jupyter auto-saves ===
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# === Project-specific data ===
+# Do not commit raw data files
 data_raw/*
 
-# Clean/intermediate data: ignore everything in data_clean, but allow shared zips
+# Clean/intermediate data: ignore everything in data_clean, but allow shared zips if needed
 data_clean/*
 !data_clean/*.zip
 
-# Ignore Jupyter auto-saves
-*.ipynb_checkpoints
+# Backups and temporary files
+backup_*/
+fix_*encoding*.py
