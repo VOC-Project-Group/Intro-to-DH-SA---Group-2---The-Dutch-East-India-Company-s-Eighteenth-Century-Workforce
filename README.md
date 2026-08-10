@@ -1,86 +1,327 @@
 # Intro-to-DH-SA---Group-2---The-Dutch-East-India-Company-s-Eighteenth-Century-Workforce
 
-This repository contains our project files for the course Introduction to Digital Humanities & Social Analytics (taught by Lorella Viola at VU Amsterdam).
-Our project examines workforce patterns within the VOC (Dutch East India Company) during the eighteenth century (1700-1780), with a focus on the relationships between origins, ranks, and contract outcomes. The analysis explores whether internal workforce dynamics reveal early structural weaknesses that may have contributed to the company’s eventual decline.
+# VOC Workforce Analysis
 
-## Project overview
+This repository contains project files for a Digital Humanities analysis of the Dutch East India Company (VOC) workforce in the eighteenth century.
 
-We analyzed a subset of the dataset “The Dutch East India Company’s Eighteenth-Century Workforce: an Enriched Data Collection” (Petram et al., 2024), produced by the Huygens Institute and the KNAW Humanities Cluster.
-This dataset refines more than 770,000 muster records of VOC employees (1633–1794) into approximately 460,000 identified individuals, standardizing places of origin, ranks, and wages.
-Focusing on the eighteenth century (1700–1780), our analysis explored patterns in workforce composition by region of origin, rank structure, and contract outcomes such as Death, Repatriated, Attrition, and Unknown.
-Using descriptive statistics and predictive models (Logistic Regression and Random Forest), we tested whether recruitment and attrition patterns reveal internal workforce imbalances that led to the VOC’s decline.
+The repository has two related parts:
 
-## Main findings
+1. The original course project for *Introduction to Digital Humanities & Social Analytics* at Vrije Universiteit Amsterdam, taught by Lorella Viola.
+2. A revised article-extension analysis developed after the DHBenelux poster presentation.
 
-- Death and attrition rates remained persistently high across the eighteenth century.
-- Recruitment did not match the ranks with the highest losses.
-- Rank and region were the strongest predictors of contract outcomes.
-- The VOC’s workforce system appears structurally imbalanced, reflecting internal fragility during its decline.
+The original course project was completed by Group 2. The revised article-extension analysis is a later continuation that updates the methodology, interpretation, descriptive analysis, and modelling diagnostics.
 
-## Repository structure
+## Project background
 
-- data_raw: original CSVs provided by the instructor. Not tracked by Git due to size.
-- data_clean: smaller processed(cleaned) CSVs that we generate. Not tracked by Git due to size.
-- notebooks: Python scripts for processing(cleaning), descriptives, and modeling.
-- figures: exported charts used in the report.
-- tables: exported tables used in the report.
-- docs: documentation files (workflow_documentation.pdf, codebook.md, methods_notes.txt, etc.).
+The project examines workforce patterns within the VOC during the eighteenth century, with a focus on relationships between worker origins, rank categories, and contract outcomes.
 
-## Data sources (place files in data_raw)
+The analysis uses the enriched VOC dataset:
 
-These CSV files were provided as part of the enriched VOC dataset package (Petram et al., 2024). 
-We do not commit them to Git because of size.
+**Petram et al. (2024), “The Dutch East India Company’s Eighteenth-Century Workforce: an Enriched Data Collection”**, produced by the Huygens Institute and the KNAW Humanities Cluster.
 
-- voc_persons_contracts.csv  → core contract records
-- voc_places.csv             → original places
-- voc_places_standardized.csv → standardized places with region codes (A-I)
-- voc_ranks.csv              → detailed rank information
-- voc_voyages.csv            → voyage information
-- voc_sources.csv            → source references
-- voc_names.csv              → name clusters and disambiguation
-- voc_beneficiaries.csv      → beneficiaries listed in contracts
+The dataset refines more than 770,000 VOC muster records into approximately 460,000 identified individuals, with standardized information on places of origin, ranks, wages, contracts, and related historical metadata.
 
-## Scripts and Reproducibility
-The entire analysis is reproducible through three sequential Python scripts:
-1. 01_cleaning.py - filters data (1700–1780), maps regions and ranks, creates derived variables
-2. 02_descriptives.py - produces descriptive statistics and figures
-3. 03_models.py - runs Logistic Regression and Random Forest models, generates feature importance and confusion matrices
+## Original course project
 
-## How to run
-1. Create a virtual environment.
-   - python -m venv .venv
-   - source .venv/bin/activate  (Windows: .venv\Scripts\activate)
-   - pip install -r requirements.txt
-2. Put the raw CSV files into data_raw.
-3. Run: python notebooks/01_cleaning.py
-4. Outputs appear in data_clean, tables, and figures.
+The original course version focused on workforce composition, recruitment patterns, rank structure, and contract outcomes in the VOC between the 1700s and 1780s.
+
+The original analysis explored whether internal workforce dynamics could reveal structural weaknesses that contributed to the VOC’s later decline.
+
+Some older files in this repository belong to the original course version of the project. They may use earlier terminology, broader outcome categories, or older figure names.
+
+## Revised article-extension analysis
+
+The revised analysis updates the original project to make the method and interpretation more careful.
+
+The main methodological updates are:
+
+- First contracts are calculated on the full dataset before filtering to the 1700s-1780s.
+- First contracts are treated as a proxy for new workforce entry, not as a direct hiring rate.
+- The earlier broad outcome grouping has been replaced with revised outcome groups:
+  - Death
+  - Repatriated
+  - Chamber
+  - Unknown / unclear
+  - Other
+  - Irregular exit
+- Death and Repatriated are analyzed both separately and together.
+- Missing `person_cluster_id` values are treated as a methodological limitation.
+- Modelling results are treated as diagnostic and supplementary, not as central evidence.
+
+## Current revised interpretation
+
+The revised analysis suggests that the strongest pattern is not simply that the VOC did not recruit enough overall.
+
+Instead, the clearer result is a rank-specific mismatch between first contracts and losses:
+
+- Military ranks are consistently overrepresented among Death outcomes compared with their first-contract share.
+- Sea ranks follow a different pattern, especially because Repatriation is much more concentrated among Sea ranks.
+- Mortality and repatriation should be interpreted separately because they reflect different workforce dynamics.
+- First-contract patterns do not map neatly onto all exit types.
+
+The revised article argument therefore focuses on how workforce entry and exit patterns differed by rank and time. We hypothesize that this rank-specific mismatch, especially losses due to death in Military ranks and repatriation in Sea ranks, may have contributed to the VOC’s collapse alongside external factors.
+
+## Repository structure and key files
+
+This repository contains both the original course project and the revised article-extension analysis.
+
+### `data_raw/`
+
+Raw VOC data files. These files are not tracked by Git because of file size and data-management reasons.
+
+Expected raw files include:
+
+- `voc_persons_contracts.csv`
+- `voc_places.csv`
+- `voc_places_standardized.csv`
+- `voc_ranks.csv`
+- `voc_voyages.csv`
+- `voc_sources.csv`
+- `voc_names.csv`
+- `voc_beneficiaries.csv`
+
+### `data_clean/`
+
+Cleaned and intermediate data files generated by the scripts. These files are not tracked by Git because of file size.
+
+Main generated files include:
+
+- `contracts_filtered.csv`
+- `contracts_clean.csv`
+
+### Main scripts
+
+The main revised scripts are stored in the repository root.
+
+#### `01_cleaning.py`
+
+Cleans the raw VOC contracts data, creates revised outcome groups, and creates the corrected first-contract indicator.
+
+Main outputs:
+
+- `data_clean/contracts_filtered.csv`
+- `data_clean/contracts_clean.csv`
+- `tables/outcome_counts_revised.csv`
+- `tables/reason_end_contract_mapping_check_revised.csv`
+- `docs/methods_notes.txt`
+
+#### `02_descriptives.py`
+
+Creates revised descriptive tables and figures.
+
+Main outputs:
+
+- `tables/region_by_rank_parent_count.csv`
+- `tables/region_by_rank_parent_pct.csv`
+- `tables/rank_parent_by_outcome_revised_count.csv`
+- `tables/rank_parent_by_outcome_revised_pct.csv`
+- `tables/region_by_outcome_group_revised_count.csv`
+- `tables/region_by_outcome_group_revised_pct.csv`
+- `tables/trend_by_decade_revised.csv`
+- `tables/first_contracts_vs_exits_by_rank_revised.csv`
+- `tables/outcome_rates_and_first_contract_share_by_decade_rank_revised.csv`
+- `figures/fig_region_by_rank_parent.png`
+- `figures/fig_rank_parent_by_outcome_revised.png`
+- `figures/fig_trend_over_time_revised.png`
+- `figures/fig_death_rate_and_first_contract_rate_by_decade.png`
+- `figures/fig_first_contracts_vs_exits_by_rank_revised.png`
+- `figures/fig_outcome_rates_and_first_contract_share_by_rank_revised.png`
+- `docs/figure_captions_revised.txt`
+
+The script also generates decade-specific first-contract versus exit figures and tables for the 1700s through 1780s.
+
+#### `03_models.py`
+
+Runs revised diagnostic models using the revised outcome grouping and first-contract status.
+
+Main outputs:
+
+- `tables/model_class_distribution_revised.csv`
+- `tables/model_logit_classification_report_revised.csv`
+- `tables/model_logit_confusion_matrix_revised.csv`
+- `tables/model_rf_classification_report_revised.csv`
+- `tables/model_rf_confusion_matrix_revised.csv`
+- `tables/model_rf_feature_importances_revised.csv`
+- `figures/fig_logit_confusion_matrix_revised.png`
+- `figures/fig_rf_confusion_matrix_revised.png`
+- `figures/fig_rf_feature_importance_revised.png`
+- `docs/model_notes_revised.txt`
+
+#### `13_revised_outcome_first_contract_benchmark.py`
+
+Creates benchmark tables comparing first-contract shares with Death, Repatriated, and Death + Repatriated shares by rank.
+
+Main outputs:
+
+- `tables/v3_reason_end_contract_mapping_check_1700_1780.csv`
+- `tables/v3_missing_person_cluster_by_disambiguation_1700_1780.csv`
+- `tables/v3_missing_person_cluster_by_rank_1700_1780.csv`
+- `tables/v3_rank_first_contract_exit_benchmark_all_records_1700_1780.csv`
+- `tables/v3_rank_first_contract_exit_benchmark_identifiable_only_1700_1780.csv`
+- `tables/v3_decade_rank_first_contract_exit_benchmark_all_records_1700_1780.csv`
+- `tables/v3_decade_rank_first_contract_exit_benchmark_identifiable_only_1700_1780.csv`
+
+This script was used to refine the interpretation from a broad new-workforce-entry claim to a more specific first-contract versus exit-pattern comparison.
+
+#### `14_model_sensitivity_without_first_contract.py`
+
+Runs a sensitivity model without first-contract status.
+
+This checks whether rank, region, decade, Dutch/non-Dutch status, and high-rank status still help separate revised outcome groups when the derived first-contract variable is excluded.
+
+Main outputs:
+
+- `tables/model_sensitivity_no_first_contract_class_distribution.csv`
+- `tables/model_sensitivity_no_first_contract_logit_report.csv`
+- `tables/model_sensitivity_no_first_contract_logit_confusion_matrix.csv`
+- `tables/model_sensitivity_no_first_contract_rf_report.csv`
+- `tables/model_sensitivity_no_first_contract_rf_confusion_matrix.csv`
+- `tables/model_sensitivity_no_first_contract_rf_feature_importances.csv`
+- `figures/fig_logit_confusion_matrix_sensitivity_no_first_contract.png`
+- `figures/fig_rf_confusion_matrix_sensitivity_no_first_contract.png`
+- `figures/fig_rf_feature_importance_sensitivity_no_first_contract.png`
+- `docs/model_sensitivity_no_first_contract_notes.txt`
+
+#### `15_model_comparison_summary.py`
+
+Creates a compact comparison of the main revised models and sensitivity models.
+
+Main outputs:
+
+- `tables/model_comparison_summary_revised.csv`
+- `docs/model_comparison_summary_revised.txt`
+
+### `docs/`
+
+Documentation and summary files.
+
+Most useful revised files:
+
+- `docs/results_summary_revised.md`
+- `docs/article_method_decision_log.md`
+- `docs/figure_captions_revised.txt`
+- `docs/model_notes_revised.txt`
+- `docs/model_sensitivity_no_first_contract_notes.txt`
+- `docs/model_comparison_summary_revised.txt`
+
+Original course documentation may also be present, including:
+
+- `docs/workflow_documentation.pdf`
+- `docs/codebook.md`
+- `docs/methods_notes.txt`
+- `docs/model_notes.txt`
+- `docs/figure_captions.txt`
+- `docs/VOC_Methodology_Summary.pdf`
+
+### `tables/`
+
+Generated CSV tables from the original and revised analyses.
+
+Key revised tables include:
+
+- `outcome_counts_revised.csv`
+- `reason_end_contract_mapping_check_revised.csv`
+- `trend_by_decade_revised.csv`
+- `first_contracts_vs_exits_by_rank_revised.csv`
+- `outcome_rates_and_first_contract_share_by_decade_rank_revised.csv`
+- `model_comparison_summary_revised.csv`
+- `model_rf_feature_importances_revised.csv`
+- `model_sensitivity_no_first_contract_rf_feature_importances.csv`
+
+### `figures/`
+
+Generated figures from the original and revised analyses.
+
+Key revised figures include:
+
+- `fig_region_by_rank_parent.png`
+- `fig_rank_parent_by_outcome_revised.png`
+- `fig_trend_over_time_revised.png`
+- `fig_death_rate_and_first_contract_rate_by_decade.png`
+- `fig_first_contracts_vs_exits_by_rank_revised.png`
+- `fig_outcome_rates_and_first_contract_share_by_rank_revised.png`
+- `fig_logit_confusion_matrix_revised.png`
+- `fig_rf_confusion_matrix_revised.png`
+- `fig_rf_feature_importance_revised.png`
+- `fig_rf_feature_importance_sensitivity_no_first_contract.png`
+
+## Most useful revised summary files
+
+For a quick overview of the revised analysis, start with:
+
+- `docs/results_summary_revised.md`
+- `docs/article_method_decision_log.md`
+- `docs/model_comparison_summary_revised.txt`
+- `docs/figure_captions_revised.txt`
+
+## Data sources
+
+The raw CSV files are not included in this repository.
+
+To rerun the full analysis, place the VOC data files locally in `data_raw/`.
+
+Expected raw files include:
+
+- `voc_persons_contracts.csv`
+- `voc_places.csv`
+- `voc_places_standardized.csv`
+- `voc_ranks.csv`
+- `voc_voyages.csv`
+- `voc_sources.csv`
+- `voc_names.csv`
+- `voc_beneficiaries.csv`
+
+## How to run the revised analysis
+
+From the repository root, run:
+
+1. `python 01_cleaning.py`
+2. `python 02_descriptives.py`
+3. `python 03_models.py`
+4. `python 14_model_sensitivity_without_first_contract.py`
+5. `python 15_model_comparison_summary.py`
+
+The scripts save outputs to:
+
+- `data_clean/`
+- `tables/`
+- `figures/`
+- `docs/`
 
 ## Dependencies
-See requirements.txt for exact versions.
-Main libraries: pandas, numpy, matplotlib, scikit-learn, statsmodels, lifelines.
 
-## **Documentation**
-- `docs/workflow_documentation.pdf` - full workflow documentation
-- `docs/codebook.md` - variable definitions and coding details
-- `docs/methods_notes.txt` - detailed notes on preprocessing and modeling decisions
-- `docs/model_notes.txt` - model results, evaluation metrics, and confusion matrices
-- `docs/figure_captions.txt` - figure summaries and interpretations
-- `docs/VOC_Methodology_Summary.pdf` - methodology and figures overview
+See `requirements.txt` for package versions.
 
-## About the Figures
+Main libraries used include:
 
-The figures summarize the main findings of the analysis:
-- fig_region_by_rank_parent.png - distribution of worker origins across rank categories
-- fig_death_vs_recruitment_by_decade.png - comparison of death and recruitment rates per decade
-- fig_death_vs_recruitment_by_rank.png - death and recruitment patterns across rank types
-- fig_outcome_trends_plus_recruitment_by_rank.png - decade-by-decade panel view showing outcomes and recruitment share for each rank
-- fig_logit_confusion_matrix.png - model evaluation for Logistic Regression
-- fig_rf_feature_importance.png - key variables influencing outcomes in the Random Forest model
-- fig_rf_confusion_matrix.png - performance of the Random Forest model compared with actual outcomes
+- pandas
+- numpy
+- matplotlib
+- scikit-learn
 
-Each figure is listed in docs/figure_captions.txt in addition to the other figures we created throughout the project.
+Some earlier project files may also use additional libraries such as statsmodels or lifelines.
 
-## Authors - Group 2
-1. Feruza Bakhtiyorova (Artificial Intelligence) - Data preparation, analysis, modeling, and methodology writing
-2. Dunya Boon (Communication) - Literature research, historical context, editing, and citations
-3. Emily Li (History and Sociology) - Literature research, sustainability focus, and report structure
+## Current status
+
+The revised cleaning, descriptive, modelling, sensitivity, and comparison scripts run successfully.
+
+The active revised scripts no longer use the old broad outcome grouping or old “death vs recruitment” wording.
+
+The most recent revised interpretation is summarized in:
+
+- `docs/results_summary_revised.md`
+
+## Authors - original course project, Group 2
+
+1. Feruza Bakhtiyorova, Artificial Intelligence  
+   Data preparation, analysis, modelling, and methodology writing.
+
+2. Dunya Boon, Communication  
+   Literature research, historical context, editing, and citations.
+
+3. Emily Li, History and Sociology  
+   Literature research, sustainability focus, and report structure.
+
+## Revised article-extension work
+
+The revised article-extension analysis was continued by Feruza Bakhtiyorova after the original course project and DHBenelux poster presentation, with feedback from Lorella Viola.
