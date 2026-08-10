@@ -1,0 +1,8 @@
+rank_parent,contracts_n,first_contracts_n,deaths_n,repatriated_n,death_repatriated_n,all_records_share,first_contract_share,death_share,repatriated_share,death_repatriated_share,first_contract_minus_death_share,first_contract_minus_repatriated_share,first_contract_minus_death_repatriated_share,death_rate_within_rank,repatriated_rate_within_rank,death_repatriated_rate_within_rank
+Sea,37620,23535,17332,14478,31810,48.62,47.57,38.49,72.71,48.98,9.08,-25.14,-1.41,46.07,38.48,84.56
+Military,31117,20528,22647,2787,25434,40.21,41.49,50.3,14.0,39.17,-8.81,27.49,2.32,72.78,8.96,81.74
+Ship,5314,3270,3050,1710,4760,6.87,6.61,6.77,8.59,7.33,-0.16,-1.98,-0.72,57.4,32.18,89.57
+Other,1991,1301,1320,429,1749,2.57,2.63,2.93,2.15,2.69,-0.3,0.48,-0.06,66.3,21.55,87.85
+Medical,956,553,423,434,857,1.24,1.12,0.94,2.18,1.32,0.18,-1.06,-0.2,44.25,45.4,89.64
+Trade,298,236,205,60,265,0.39,0.48,0.46,0.3,0.41,0.02,0.18,0.07,68.79,20.13,88.93
+Unknown,87,54,50,14,64,0.11,0.11,0.11,0.07,0.1,0.0,0.04,0.01,57.47,16.09,73.56

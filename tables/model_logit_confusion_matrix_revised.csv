@@ -1,0 +1,7 @@
+actual,predicted_Chamber,predicted_Death,predicted_Irregular exit,predicted_Other,predicted_Repatriated,predicted_Unknown / unclear
+actual_Chamber,5793,1001,835,114,1818,1247
+actual_Death,20153,18986,11495,268,26356,10593
+actual_Irregular exit,928,685,947,42,1166,581
+actual_Other,1178,836,722,50,1301,745
+actual_Repatriated,11314,4870,6904,229,23496,4160
+actual_Unknown / unclear,3380,1394,1497,98,2774,1278

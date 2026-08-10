@@ -1,0 +1,8 @@
+rank_parent,all_endings_n,all_endings_share,first_contracts_n,first_contract_share_within_rank,first_contract_share_of_all_first_contracts,deaths_n,death_share_of_all_deaths,first_contract_minus_death_share,first_contract_minus_all_endings_share,Death,Repatriated,Irregular exit,Chamber,Other,Unknown / unclear
+Sea,360625,53.27,222066,61.58,53.42,157636,44.86,8.56,0.15,43.71,39.06,2.79,5.98,2.8,5.66
+Military,234377,34.62,143679,61.3,34.56,151933,43.24,-8.68,-0.06,64.82,14.31,2.66,7.62,3.17,7.42
+Ship,50824,7.51,30510,60.03,7.34,25551,7.27,0.07,-0.17,50.27,39.21,1.31,4.22,1.65,3.34
+Other,17337,2.56,11140,64.26,2.68,10734,3.05,-0.37,0.12,61.91,22.43,1.74,5.88,2.65,5.39
+Medical,8693,1.28,5152,59.27,1.24,3358,0.96,0.28,-0.04,38.63,51.77,0.6,3.73,1.98,3.3
+Trade,2611,0.39,2009,76.94,0.48,1505,0.43,0.05,0.09,57.64,26.54,1.53,6.09,2.72,5.48
+Unknown,2467,0.36,1171,47.47,0.28,687,0.2,0.08,-0.08,27.85,19.7,2.07,6.61,10.09,33.68

@@ -1,0 +1,12 @@
+MODEL COMPARISON SUMMARY - Revised VOC outcome prediction
+
+This table compares the main revised models with the sensitivity models that exclude first-contract status.
+
+              model                   feature_set  accuracy  macro_precision  macro_recall  macro_f1  weighted_precision  weighted_recall  weighted_f1
+Logistic Regression    with first-contract status     0.299            0.234         0.261     0.193               0.495            0.299        0.323
+      Random Forest    with first-contract status     0.328            0.286         0.327     0.250               0.527            0.328        0.368
+Logistic Regression without first-contract status     0.283            0.201         0.228     0.160               0.464            0.283        0.296
+      Random Forest without first-contract status     0.340            0.269         0.292     0.236               0.506            0.340        0.369
+
+Interpretation:
+The models have modest predictive performance overall. The Random Forest models perform slightly better than Logistic Regression, but neither model separates all revised outcome groups strongly. The sensitivity model without first-contract status performs similarly to the main model. This suggests that the modelling results are not driven only by the first-contract variable. However, the results should remain diagnostic and supplementary rather than central evidence.

@@ -1,0 +1,21 @@
+feature,importance
+decade,0.5851388483188492
+rank_parent_Military,0.09141452143493733
+rank_parent_Sea,0.06962960577886451
+is_high_rank,0.0577779893592944
+is_dutch,0.030967974795666917
+rank_parent_Unknown,0.029839864637956126
+region_label_Dutch Republic,0.028409441248214196
+rank_parent_Ship,0.018182441289131306
+region_label_Unknown,0.015775295469661974
+rank_parent_Other,0.010239483283692369
+region_label_Iberia,0.009963283269621872
+region_label_British Isles,0.009828381833271864
+region_label_Low German,0.009520432680644357
+region_label_German interior,0.009160744711421021
+rank_parent_Medical,0.009146905637215073
+region_label_France,0.005161828296280795
+region_label_Italy/Corsica,0.0030277140683953397
+region_label_Scandinavia,0.0030065309425411284
+rank_parent_Trade,0.002608484776158677
+region_label_Eastern/Southeastern Europe,0.001200228168181475

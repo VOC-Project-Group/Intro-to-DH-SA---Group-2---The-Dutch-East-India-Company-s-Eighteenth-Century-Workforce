@@ -1,0 +1,32 @@
+reason_end_contract_raw,reason_end_contract_normalized,outcome_group_revised,count,percentage_of_dataset
+Deceased,deceased,Death,339359,50.13
+Repatriated,repatriated,Repatriated,203890,30.12
+Amsterdam chamber,amsterdam chamber,Chamber,23004,3.4
+Last record,last record,Unknown / unclear,18193,2.69
+Missing,missing,Unknown / unclear,16679,2.46
+Deserted,deserted,Irregular exit,13526,2.0
+Absent upon departure,absent upon departure,Other,12489,1.84
+Shipwrecked,shipwrecked,Death,11175,1.65
+Zeeland chamber,zeeland chamber,Chamber,10661,1.57
+Not recorded,not recorded,Unknown / unclear,6618,0.98
+Free citizen,free citizen,Other,4349,0.64
+Delft chamber,delft chamber,Chamber,2513,0.37
+Rotterdam chamber,rotterdam chamber,Chamber,2459,0.36
+Enkhuizen chamber,enkhuizen chamber,Chamber,2328,0.34
+Hoorn chamber,hoorn chamber,Chamber,2266,0.33
+Removed,removed,Irregular exit,1840,0.27
+Penalised or punished,penalised or punished,Irregular exit,1290,0.19
+Dismissal,dismissal,Irregular exit,691,0.1
+Murdered,murdered,Death,641,0.09
+Transferred,transferred,Other,448,0.07
+To a man of war,to a man of war,Other,430,0.06
+Otherwise,otherwise,Other,413,0.06
+Age,age,Other,374,0.06
+Unfit to work,unfit to work,Other,374,0.06
+Death penalty,death penalty,Death,229,0.03
+To a private ship,to a private ship,Other,207,0.03
+Unknown,unknown,Unknown / unclear,196,0.03
+Resignation,resignation,Other,146,0.02
+to regiment,to regiment,Other,91,0.01
+Woman,woman,Irregular exit,49,0.01
+Remains at the Cape,remains at the cape,Other,6,0.0

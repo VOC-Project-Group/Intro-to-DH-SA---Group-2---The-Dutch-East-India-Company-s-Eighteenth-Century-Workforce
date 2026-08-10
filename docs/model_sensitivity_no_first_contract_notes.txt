@@ -1,0 +1,68 @@
+MODEL NOTES - Sensitivity model without first-contract status
+
+Target column used:
+- outcome_group_revised
+
+Target classes included:
+- Death
+- Repatriated
+- Chamber
+- Unknown / unclear
+- Other
+- Irregular exit
+
+Feature columns used:
+- region_label
+- rank_parent
+- decade
+- is_high_rank
+- is_dutch
+
+Feature deliberately excluded:
+- first-contract status
+
+Rows used for modelling: 676,934
+Train size: 507,700
+Test size: 169,234
+
+Class distribution:
+outcome_group_revised      n  share_pct
+                Death 351404      51.91
+          Repatriated 203890      30.12
+              Chamber  43231       6.39
+    Unknown / unclear  41686       6.16
+                Other  19327       2.86
+       Irregular exit  17396       2.57
+
+Logistic Regression accuracy: 0.283
+                   precision    recall  f1-score   support
+
+          Chamber      0.000     0.000     0.000     10808
+            Death      0.634     0.175     0.274     87851
+   Irregular exit      0.035     0.305     0.063      4349
+            Other      0.028     0.005     0.008      4832
+      Repatriated      0.423     0.542     0.475     50973
+Unknown / unclear      0.087     0.341     0.139     10421
+
+         accuracy                          0.283    169234
+        macro avg      0.201     0.228     0.160    169234
+     weighted avg      0.464     0.283     0.296    169234
+
+
+Random Forest accuracy: 0.340
+                   precision    recall  f1-score   support
+
+          Chamber      0.103     0.117     0.109     10808
+            Death      0.655     0.252     0.364     87851
+   Irregular exit      0.041     0.253     0.071      4349
+            Other      0.065     0.332     0.108      4832
+      Repatriated      0.457     0.572     0.508     50973
+Unknown / unclear      0.294     0.226     0.256     10421
+
+         accuracy                          0.340    169234
+        macro avg      0.269     0.292     0.236    169234
+     weighted avg      0.506     0.340     0.369    169234
+
+
+Interpretation note:
+This sensitivity model excludes first-contract status. It checks whether rank, region, decade, Dutch/non-Dutch status, and high-rank status still help separate revised outcome groups without the derived workforce-entry variable. The model remains diagnostic and descriptive, not causal.

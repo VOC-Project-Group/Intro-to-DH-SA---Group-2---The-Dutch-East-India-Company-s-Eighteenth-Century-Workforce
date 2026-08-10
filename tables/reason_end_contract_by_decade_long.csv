@@ -1,0 +1,387 @@
+decade,reason_end_contract,count,decade_total,percentage_within_decade
+1670.0,Age,2,1943,0.1
+1670.0,Amsterdam chamber,20,1943,1.03
+1670.0,Deceased,263,1943,13.54
+1670.0,Delft chamber,2,1943,0.1
+1670.0,Deserted,10,1943,0.51
+1670.0,Dismissal,1,1943,0.05
+1670.0,Enkhuizen chamber,3,1943,0.15
+1670.0,Free citizen,8,1943,0.41
+1670.0,Hoorn chamber,4,1943,0.21
+1670.0,Last record,12,1943,0.62
+1670.0,Missing,15,1943,0.77
+1670.0,Murdered,3,1943,0.15
+1670.0,Not recorded,1368,1943,70.41
+1670.0,Otherwise,1,1943,0.05
+1670.0,Penalised or punished,1,1943,0.05
+1670.0,Repatriated,217,1943,11.17
+1670.0,Rotterdam chamber,1,1943,0.05
+1670.0,Shipwrecked,6,1943,0.31
+1670.0,Unfit to work,1,1943,0.05
+1670.0,Zeeland chamber,5,1943,0.26
+1680.0,Absent upon departure,13,28565,0.05
+1680.0,Age,34,28565,0.12
+1680.0,Amsterdam chamber,513,28565,1.8
+1680.0,Death penalty,13,28565,0.05
+1680.0,Deceased,6364,28565,22.28
+1680.0,Delft chamber,40,28565,0.14
+1680.0,Deserted,239,28565,0.84
+1680.0,Dismissal,8,28565,0.03
+1680.0,Enkhuizen chamber,57,28565,0.2
+1680.0,Free citizen,270,28565,0.95
+1680.0,Hoorn chamber,41,28565,0.14
+1680.0,In lening gaan,4,28565,0.01
+1680.0,Last record,2381,28565,8.34
+1680.0,Missing,158,28565,0.55
+1680.0,Murdered,29,28565,0.1
+1680.0,Not recorded,11950,28565,41.83
+1680.0,Otherwise,6,28565,0.02
+1680.0,Penalised or punished,53,28565,0.19
+1680.0,Removed,39,28565,0.14
+1680.0,Repatriated,4966,28565,17.38
+1680.0,Resignation,7,28565,0.02
+1680.0,Rotterdam chamber,30,28565,0.11
+1680.0,Shipwrecked,218,28565,0.76
+1680.0,To a private ship,1,28565,0.0
+1680.0,Transferred,7,28565,0.02
+1680.0,Unfit to work,13,28565,0.05
+1680.0,Unknown,970,28565,3.4
+1680.0,Woman,1,28565,0.0
+1680.0,Zeeland chamber,140,28565,0.49
+1690.0,Absent upon departure,86,30942,0.28
+1690.0,Age,49,30942,0.16
+1690.0,Amsterdam chamber,689,30942,2.23
+1690.0,Death penalty,31,30942,0.1
+1690.0,Deceased,9249,30942,29.89
+1690.0,Delft chamber,65,30942,0.21
+1690.0,Deserted,487,30942,1.57
+1690.0,Dismissal,11,30942,0.04
+1690.0,Enkhuizen chamber,35,30942,0.11
+1690.0,Free citizen,320,30942,1.03
+1690.0,Hoorn chamber,17,30942,0.05
+1690.0,In lening gaan,1,30942,0.0
+1690.0,Last record,485,30942,1.57
+1690.0,Missing,316,30942,1.02
+1690.0,Murdered,25,30942,0.08
+1690.0,Not recorded,9849,30942,31.83
+1690.0,Penalised or punished,61,30942,0.2
+1690.0,Removed,6,30942,0.02
+1690.0,Repatriated,8520,30942,27.54
+1690.0,Resignation,5,30942,0.02
+1690.0,Rotterdam chamber,47,30942,0.15
+1690.0,Shipwrecked,211,30942,0.68
+1690.0,Unfit to work,15,30942,0.05
+1690.0,Unknown,124,30942,0.4
+1690.0,Woman,2,30942,0.01
+1690.0,Zeeland chamber,236,30942,0.76
+1700.0,Absent upon departure,71,48166,0.15
+1700.0,Age,63,48166,0.13
+1700.0,Amsterdam chamber,1284,48166,2.67
+1700.0,Death penalty,42,48166,0.09
+1700.0,Deceased,20429,48166,42.41
+1700.0,Delft chamber,145,48166,0.3
+1700.0,Deserted,1048,48166,2.18
+1700.0,Dismissal,15,48166,0.03
+1700.0,Enkhuizen chamber,121,48166,0.25
+1700.0,Free citizen,416,48166,0.86
+1700.0,Hoorn chamber,162,48166,0.34
+1700.0,Last record,893,48166,1.85
+1700.0,Missing,1272,48166,2.64
+1700.0,Murdered,40,48166,0.08
+1700.0,Not recorded,487,48166,1.01
+1700.0,Otherwise,210,48166,0.44
+1700.0,Penalised or punished,128,48166,0.27
+1700.0,Removed,63,48166,0.13
+1700.0,Repatriated,19773,48166,41.05
+1700.0,Resignation,6,48166,0.01
+1700.0,Rotterdam chamber,145,48166,0.3
+1700.0,Shipwrecked,569,48166,1.18
+1700.0,To a private ship,1,48166,0.0
+1700.0,Transferred,76,48166,0.16
+1700.0,Unfit to work,24,48166,0.05
+1700.0,Unknown,7,48166,0.01
+1700.0,Woman,3,48166,0.01
+1700.0,Zeeland chamber,673,48166,1.4
+1710.0,Absent upon departure,143,61647,0.23
+1710.0,Age,50,61647,0.08
+1710.0,Amsterdam chamber,1473,61647,2.39
+1710.0,Death penalty,46,61647,0.07
+1710.0,Deceased,26478,61647,42.95
+1710.0,Delft chamber,136,61647,0.22
+1710.0,Deserted,795,61647,1.29
+1710.0,Dismissal,15,61647,0.02
+1710.0,Enkhuizen chamber,122,61647,0.2
+1710.0,Free citizen,423,61647,0.69
+1710.0,Hoorn chamber,141,61647,0.23
+1710.0,Last record,781,61647,1.27
+1710.0,Missing,1177,61647,1.91
+1710.0,Murdered,62,61647,0.1
+1710.0,Not recorded,125,61647,0.2
+1710.0,Otherwise,1,61647,0.0
+1710.0,Penalised or punished,144,61647,0.23
+1710.0,Removed,18,61647,0.03
+1710.0,Repatriated,27684,61647,44.91
+1710.0,Resignation,4,61647,0.01
+1710.0,Rotterdam chamber,169,61647,0.27
+1710.0,Shipwrecked,915,61647,1.48
+1710.0,Transferred,5,61647,0.01
+1710.0,Unfit to work,17,61647,0.03
+1710.0,Woman,4,61647,0.01
+1710.0,Zeeland chamber,719,61647,1.17
+1720.0,Absent upon departure,231,73257,0.32
+1720.0,Age,29,73257,0.04
+1720.0,Amsterdam chamber,1877,73257,2.56
+1720.0,Death penalty,38,73257,0.05
+1720.0,Deceased,32617,73257,44.52
+1720.0,Delft chamber,167,73257,0.23
+1720.0,Deserted,1086,73257,1.48
+1720.0,Dismissal,90,73257,0.12
+1720.0,Enkhuizen chamber,299,73257,0.41
+1720.0,Free citizen,377,73257,0.51
+1720.0,Hoorn chamber,248,73257,0.34
+1720.0,Last record,977,73257,1.33
+1720.0,Missing,907,73257,1.24
+1720.0,Murdered,72,73257,0.1
+1720.0,Not recorded,1098,73257,1.5
+1720.0,Penalised or punished,260,73257,0.35
+1720.0,Remains at the Cape,1,73257,0.0
+1720.0,Removed,30,73257,0.04
+1720.0,Repatriated,29952,73257,40.89
+1720.0,Resignation,8,73257,0.01
+1720.0,Rotterdam chamber,173,73257,0.24
+1720.0,Shipwrecked,1462,73257,2.0
+1720.0,To a private ship,2,73257,0.0
+1720.0,Transferred,6,73257,0.01
+1720.0,Unfit to work,22,73257,0.03
+1720.0,Unknown,161,73257,0.22
+1720.0,Woman,2,73257,0.0
+1720.0,Zeeland chamber,1065,73257,1.45
+1730.0,Absent upon departure,116,80881,0.14
+1730.0,Age,30,80881,0.04
+1730.0,Amsterdam chamber,2140,80881,2.65
+1730.0,Death penalty,41,80881,0.05
+1730.0,Deceased,42636,80881,52.71
+1730.0,Delft chamber,207,80881,0.26
+1730.0,Deserted,1487,80881,1.84
+1730.0,Dismissal,32,80881,0.04
+1730.0,Enkhuizen chamber,331,80881,0.41
+1730.0,Free citizen,603,80881,0.75
+1730.0,Hoorn chamber,261,80881,0.32
+1730.0,Last record,1163,80881,1.44
+1730.0,Missing,1279,80881,1.58
+1730.0,Murdered,111,80881,0.14
+1730.0,Not recorded,245,80881,0.3
+1730.0,Otherwise,3,80881,0.0
+1730.0,Penalised or punished,200,80881,0.25
+1730.0,Remains at the Cape,2,80881,0.0
+1730.0,Removed,50,80881,0.06
+1730.0,Repatriated,26323,80881,32.55
+1730.0,Resignation,8,80881,0.01
+1730.0,Rotterdam chamber,227,80881,0.28
+1730.0,Shipwrecked,1710,80881,2.11
+1730.0,To a private ship,2,80881,0.0
+1730.0,Transferred,2,80881,0.0
+1730.0,Unfit to work,28,80881,0.03
+1730.0,Unknown,2,80881,0.0
+1730.0,Woman,3,80881,0.0
+1730.0,Zeeland chamber,1639,80881,2.03
+1740.0,Absent upon departure,692,77383,0.89
+1740.0,Age,49,77383,0.06
+1740.0,Amsterdam chamber,2320,77383,3.0
+1740.0,Death penalty,15,77383,0.02
+1740.0,Deceased,43651,77383,56.41
+1740.0,Delft chamber,264,77383,0.34
+1740.0,Deserted,1865,77383,2.41
+1740.0,Dismissal,172,77383,0.22
+1740.0,Enkhuizen chamber,251,77383,0.32
+1740.0,Free citizen,582,77383,0.75
+1740.0,Hoorn chamber,216,77383,0.28
+1740.0,Last record,1449,77383,1.87
+1740.0,Missing,2501,77383,3.23
+1740.0,Murdered,80,77383,0.1
+1740.0,Not recorded,210,77383,0.27
+1740.0,Otherwise,3,77383,0.0
+1740.0,Penalised or punished,179,77383,0.23
+1740.0,Removed,135,77383,0.17
+1740.0,Repatriated,19912,77383,25.73
+1740.0,Resignation,36,77383,0.05
+1740.0,Rotterdam chamber,210,77383,0.27
+1740.0,Shipwrecked,1281,77383,1.66
+1740.0,To a man of war,8,77383,0.01
+1740.0,To a private ship,3,77383,0.0
+1740.0,Transferred,21,77383,0.03
+1740.0,Unfit to work,78,77383,0.1
+1740.0,Unknown,22,77383,0.03
+1740.0,Woman,12,77383,0.02
+1740.0,Zeeland chamber,1166,77383,1.51
+1750.0,Absent upon departure,1590,85136,1.87
+1750.0,Age,52,85136,0.06
+1750.0,Amsterdam chamber,2245,85136,2.64
+1750.0,Death penalty,15,85136,0.02
+1750.0,Deceased,45357,85136,53.28
+1750.0,Delft chamber,241,85136,0.28
+1750.0,Deserted,2190,85136,2.57
+1750.0,Dismissal,86,85136,0.1
+1750.0,Enkhuizen chamber,283,85136,0.33
+1750.0,Free citizen,562,85136,0.66
+1750.0,Hoorn chamber,252,85136,0.3
+1750.0,Last record,1891,85136,2.22
+1750.0,Missing,3354,85136,3.94
+1750.0,Murdered,128,85136,0.15
+1750.0,Not recorded,35,85136,0.04
+1750.0,Penalised or punished,143,85136,0.17
+1750.0,Removed,125,85136,0.15
+1750.0,Repatriated,24344,85136,28.59
+1750.0,Resignation,23,85136,0.03
+1750.0,Rotterdam chamber,208,85136,0.24
+1750.0,Shipwrecked,1069,85136,1.26
+1750.0,To a private ship,22,85136,0.03
+1750.0,Transferred,2,85136,0.0
+1750.0,Unfit to work,28,85136,0.03
+1750.0,Unknown,1,85136,0.0
+1750.0,Woman,10,85136,0.01
+1750.0,Zeeland chamber,880,85136,1.03
+1760.0,Absent upon departure,2104,94403,2.23
+1760.0,Age,53,94403,0.06
+1760.0,Amsterdam chamber,3960,94403,4.19
+1760.0,Death penalty,19,94403,0.02
+1760.0,Deceased,51211,94403,54.25
+1760.0,Delft chamber,356,94403,0.38
+1760.0,Deserted,2046,94403,2.17
+1760.0,Dismissal,70,94403,0.07
+1760.0,Enkhuizen chamber,429,94403,0.45
+1760.0,Free citizen,587,94403,0.62
+1760.0,Hoorn chamber,322,94403,0.34
+1760.0,Last record,2046,94403,2.17
+1760.0,Missing,2334,94403,2.47
+1760.0,Murdered,71,94403,0.08
+1760.0,Not recorded,4,94403,0.0
+1760.0,Otherwise,2,94403,0.0
+1760.0,Penalised or punished,117,94403,0.12
+1760.0,Removed,442,94403,0.47
+1760.0,Repatriated,24542,94403,26.0
+1760.0,Resignation,16,94403,0.02
+1760.0,Rotterdam chamber,404,94403,0.43
+1760.0,Shipwrecked,1662,94403,1.76
+1760.0,To a man of war,3,94403,0.0
+1760.0,To a private ship,31,94403,0.03
+1760.0,Transferred,5,94403,0.01
+1760.0,Unfit to work,14,94403,0.01
+1760.0,Unknown,1,94403,0.0
+1760.0,Woman,7,94403,0.01
+1760.0,Zeeland chamber,1545,94403,1.64
+1770.0,Absent upon departure,3325,87976,3.78
+1770.0,Age,40,87976,0.05
+1770.0,Amsterdam chamber,4403,87976,5.0
+1770.0,Death penalty,7,87976,0.01
+1770.0,Deceased,47492,87976,53.98
+1770.0,Delft chamber,625,87976,0.71
+1770.0,Deserted,1300,87976,1.48
+1770.0,Dismissal,108,87976,0.12
+1770.0,Enkhuizen chamber,248,87976,0.28
+1770.0,Free citizen,467,87976,0.53
+1770.0,Hoorn chamber,315,87976,0.36
+1770.0,Last record,2319,87976,2.64
+1770.0,Missing,1459,87976,1.66
+1770.0,Murdered,50,87976,0.06
+1770.0,Not recorded,2,87976,0.0
+1770.0,Otherwise,1,87976,0.0
+1770.0,Penalised or punished,56,87976,0.06
+1770.0,Remains at the Cape,1,87976,0.0
+1770.0,Removed,486,87976,0.55
+1770.0,Repatriated,20890,87976,23.75
+1770.0,Resignation,25,87976,0.03
+1770.0,Rotterdam chamber,612,87976,0.7
+1770.0,Shipwrecked,1506,87976,1.71
+1770.0,To a man of war,62,87976,0.07
+1770.0,To a private ship,55,87976,0.06
+1770.0,Transferred,130,87976,0.15
+1770.0,Unfit to work,112,87976,0.13
+1770.0,Unknown,1,87976,0.0
+1770.0,Woman,7,87976,0.01
+1770.0,Zeeland chamber,1866,87976,2.12
+1770.0,to regiment,6,87976,0.01
+1780.0,Absent upon departure,4217,68085,6.19
+1780.0,Age,8,68085,0.01
+1780.0,Amsterdam chamber,3302,68085,4.85
+1780.0,Death penalty,6,68085,0.01
+1780.0,Deceased,29488,68085,43.31
+1780.0,Delft chamber,372,68085,0.55
+1780.0,Deserted,1709,68085,2.51
+1780.0,Dismissal,103,68085,0.15
+1780.0,Enkhuizen chamber,244,68085,0.36
+1780.0,Free citizen,332,68085,0.49
+1780.0,Hoorn chamber,349,68085,0.51
+1780.0,Last record,6674,68085,9.8
+1780.0,Missing,2396,68085,3.52
+1780.0,Murdered,27,68085,0.04
+1780.0,Not recorded,4412,68085,6.48
+1780.0,Otherwise,193,68085,0.28
+1780.0,Penalised or punished,63,68085,0.09
+1780.0,Remains at the Cape,2,68085,0.0
+1780.0,Removed,491,68085,0.72
+1780.0,Repatriated,10470,68085,15.38
+1780.0,Resignation,20,68085,0.03
+1780.0,Rotterdam chamber,311,68085,0.46
+1780.0,Shipwrecked,1001,68085,1.47
+1780.0,To a man of war,357,68085,0.52
+1780.0,To a private ship,91,68085,0.13
+1780.0,Transferred,201,68085,0.3
+1780.0,Unfit to work,51,68085,0.07
+1780.0,Unknown,1,68085,0.0
+1780.0,Woman,1,68085,0.0
+1780.0,Zeeland chamber,1108,68085,1.63
+1780.0,to regiment,85,68085,0.12
+1790.0,Absent upon departure,1690,26207,6.45
+1790.0,Amsterdam chamber,818,26207,3.12
+1790.0,Death penalty,1,26207,0.0
+1790.0,Deceased,9589,26207,36.59
+1790.0,Delft chamber,117,26207,0.45
+1790.0,Deserted,424,26207,1.62
+1790.0,Dismissal,63,26207,0.24
+1790.0,Enkhuizen chamber,74,26207,0.28
+1790.0,Free citizen,69,26207,0.26
+1790.0,Hoorn chamber,168,26207,0.64
+1790.0,Last record,6012,26207,22.94
+1790.0,Missing,884,26207,3.37
+1790.0,Murdered,3,26207,0.01
+1790.0,Not recorded,1331,26207,5.08
+1790.0,Otherwise,1,26207,0.0
+1790.0,Penalised or punished,7,26207,0.03
+1790.0,Remains at the Cape,1,26207,0.0
+1790.0,Removed,582,26207,2.22
+1790.0,Repatriated,2872,26207,10.96
+1790.0,Resignation,12,26207,0.05
+1790.0,Rotterdam chamber,174,26207,0.66
+1790.0,Shipwrecked,274,26207,1.05
+1790.0,To a man of war,65,26207,0.25
+1790.0,To a private ship,63,26207,0.24
+1790.0,Transferred,8,26207,0.03
+1790.0,Unfit to work,17,26207,0.06
+1790.0,Unknown,134,26207,0.51
+1790.0,Zeeland chamber,652,26207,2.49
+1790.0,to regiment,102,26207,0.39
+,Absent upon departure,35,9609,0.36
+,Age,3,9609,0.03
+,Amsterdam chamber,58,9609,0.6
+,Death penalty,1,9609,0.01
+,Deceased,1595,9609,16.6
+,Delft chamber,1,9609,0.01
+,Deserted,22,9609,0.23
+,Dismissal,1,9609,0.01
+,Enkhuizen chamber,1,9609,0.01
+,Free citizen,37,9609,0.39
+,Hoorn chamber,2,9609,0.02
+,In lening gaan,1,9609,0.01
+,Last record,2100,9609,21.85
+,Missing,35,9609,0.36
+,Murdered,24,9609,0.25
+,Not recorded,4537,9609,47.22
+,Penalised or punished,7,9609,0.07
+,Removed,6,9609,0.06
+,Repatriated,870,9609,9.05
+,Resignation,1,9609,0.01
+,Shipwrecked,64,9609,0.67
+,Transferred,12,9609,0.12
+,Unknown,191,9609,1.99
+,Zeeland chamber,5,9609,0.05

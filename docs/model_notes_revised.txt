@@ -1,0 +1,66 @@
+MODEL NOTES - Revised outcome prediction
+
+Target column used:
+- outcome_group_revised
+
+Target classes included:
+- Death
+- Repatriated
+- Chamber
+- Unknown / unclear
+- Other
+- Irregular exit
+
+Feature columns used:
+- region_label
+- rank_parent
+- decade
+- is_high_rank
+- is_dutch
+- first_contract_for_model
+
+Rows used for modelling: 676,934
+Train size: 507,700
+Test size: 169,234
+
+Class distribution:
+outcome_group_revised      n  share_pct
+                Death 351404      51.91
+          Repatriated 203890      30.12
+              Chamber  43231       6.39
+    Unknown / unclear  41686       6.16
+                Other  19327       2.86
+       Irregular exit  17396       2.57
+
+Logistic Regression accuracy: 0.299
+                   precision    recall  f1-score   support
+
+          Chamber      0.136     0.536     0.216     10808
+            Death      0.684     0.216     0.328     87851
+   Irregular exit      0.042     0.218     0.071      4349
+            Other      0.062     0.010     0.018      4832
+      Repatriated      0.413     0.461     0.436     50973
+Unknown / unclear      0.069     0.123     0.088     10421
+
+         accuracy                          0.299    169234
+        macro avg      0.234     0.261     0.193    169234
+     weighted avg      0.495     0.299     0.323    169234
+
+
+Random Forest accuracy: 0.328
+                   precision    recall  f1-score   support
+
+          Chamber      0.165     0.435     0.239     10808
+            Death      0.681     0.253     0.369     87851
+   Irregular exit      0.044     0.253     0.075      4349
+            Other      0.066     0.347     0.110      4832
+      Repatriated      0.474     0.463     0.468     50973
+Unknown / unclear      0.285     0.209     0.241     10421
+
+         accuracy                          0.328    169234
+        macro avg      0.286     0.327     0.250    169234
+     weighted avg      0.527     0.328     0.368    169234
+
+
+Interpretation note:
+These models are diagnostic and descriptive. They do not show causality. They help check whether broad structural variables such as rank, region, decade, Dutch/non-Dutch status, high-rank status, and first-contract status can separate the revised outcome groups.

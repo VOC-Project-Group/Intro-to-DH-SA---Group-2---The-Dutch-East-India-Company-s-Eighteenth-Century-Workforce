@@ -1,0 +1,22 @@
+feature,importance
+decade,0.41683557179649344
+first_contract_for_model,0.217635410186788
+rank_parent_Military,0.06677681595774505
+rank_parent_Sea,0.05295783373080654
+is_high_rank,0.04529197285422882
+region_label_Unknown,0.04275775875940689
+region_label_Dutch Republic,0.026806689210322455
+rank_parent_Unknown,0.02557653398064019
+is_dutch,0.0222076494794062
+region_label_Low German,0.014459775105288853
+rank_parent_Ship,0.013675185246750309
+region_label_British Isles,0.013580157482827633
+region_label_Iberia,0.008627711827986398
+region_label_German interior,0.00819614644529033
+rank_parent_Other,0.007679683200005306
+rank_parent_Medical,0.006681404573579481
+region_label_France,0.0032345798322816494
+region_label_Scandinavia,0.002309737179245986
+region_label_Italy/Corsica,0.0021272587002930006
+rank_parent_Trade,0.0017350062086647139
+region_label_Eastern/Southeastern Europe,0.0008471182419487344

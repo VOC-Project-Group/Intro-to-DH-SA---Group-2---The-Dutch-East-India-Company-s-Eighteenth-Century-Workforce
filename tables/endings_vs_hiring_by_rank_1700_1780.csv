@@ -1,0 +1,45 @@
+rank_parent,outcome_group_revised,endings_n,total_contracts_rank,ending_pct_within_rank,hires_n,hiring_rate_within_rank,hiring_share_of_all_hires
+Medical,Chamber,324,8693,3.73,5178,59.57,1.24
+Medical,Death,3358,8693,38.63,5178,59.57,1.24
+Medical,Irregular exit,52,8693,0.6,5178,59.57,1.24
+Medical,Other,172,8693,1.98,5178,59.57,1.24
+Medical,Repatriated,4500,8693,51.77,5178,59.57,1.24
+Medical,Unknown / unclear,287,8693,3.3,5178,59.57,1.24
+Military,Chamber,17867,234377,7.62,143977,61.43,34.53
+Military,Death,151933,234377,64.82,143977,61.43,34.53
+Military,Irregular exit,6225,234377,2.66,143977,61.43,34.53
+Military,Other,7360,234377,3.14,143977,61.43,34.53
+Military,Repatriated,33536,234377,14.31,143977,61.43,34.53
+Military,UNMAPPED,70,234377,0.03,143977,61.43,34.53
+Military,Unknown / unclear,17386,234377,7.42,143977,61.43,34.53
+Other,Chamber,1019,17337,5.88,11154,64.34,2.68
+Other,Death,10734,17337,61.91,11154,64.34,2.68
+Other,Irregular exit,301,17337,1.74,11154,64.34,2.68
+Other,Other,459,17337,2.65,11154,64.34,2.68
+Other,Repatriated,3889,17337,22.43,11154,64.34,2.68
+Other,Unknown / unclear,935,17337,5.39,11154,64.34,2.68
+Sea,Chamber,21553,360625,5.98,222753,61.77,53.42
+Sea,Death,157636,360625,43.71,222753,61.77,53.42
+Sea,Irregular exit,10060,360625,2.79,222753,61.77,53.42
+Sea,Other,10088,360625,2.8,222753,61.77,53.42
+Sea,Repatriated,140860,360625,39.06,222753,61.77,53.42
+Sea,UNMAPPED,21,360625,0.01,222753,61.77,53.42
+Sea,Unknown / unclear,20407,360625,5.66,222753,61.77,53.42
+Ship,Chamber,2146,50824,4.22,30709,60.42,7.37
+Ship,Death,25551,50824,50.27,30709,60.42,7.37
+Ship,Irregular exit,667,50824,1.31,30709,60.42,7.37
+Ship,Other,837,50824,1.65,30709,60.42,7.37
+Ship,Repatriated,19926,50824,39.21,30709,60.42,7.37
+Ship,Unknown / unclear,1697,50824,3.34,30709,60.42,7.37
+Trade,Chamber,159,2611,6.09,2011,77.02,0.48
+Trade,Death,1505,2611,57.64,2011,77.02,0.48
+Trade,Irregular exit,40,2611,1.53,2011,77.02,0.48
+Trade,Other,71,2611,2.72,2011,77.02,0.48
+Trade,Repatriated,693,2611,26.54,2011,77.02,0.48
+Trade,Unknown / unclear,143,2611,5.48,2011,77.02,0.48
+Unknown,Chamber,163,2467,6.61,1172,47.51,0.28
+Unknown,Death,687,2467,27.85,1172,47.51,0.28
+Unknown,Irregular exit,51,2467,2.07,1172,47.51,0.28
+Unknown,Other,249,2467,10.09,1172,47.51,0.28
+Unknown,Repatriated,486,2467,19.7,1172,47.51,0.28
+Unknown,Unknown / unclear,831,2467,33.68,1172,47.51,0.28

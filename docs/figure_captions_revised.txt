@@ -1,0 +1,21 @@
+fig_region_by_rank_parent.png - Share of origin regions within each parent rank category.
+fig_rank_parent_by_outcome_revised.png - Distribution of parent rank categories within revised outcome groups.
+fig_trend_over_time_revised.png - Foreign share, death rate, repatriated rate, irregular exit rate, and high-rank share by decade.
+fig_death_rate_and_first_contract_rate_by_decade.png - Death rate and first-contract rate by decade.
+fig_first_contracts_vs_exits_by_rank_revised.png - First-contract share, death share, repatriated share, and death + repatriated share by parent rank across all decades.
+fig_first_contracts_vs_exits_by_rank_1700s_revised.png - First-contract and major-exit shares by parent rank in the 1700s.
+fig_first_contracts_vs_exits_by_rank_1710s_revised.png - First-contract and major-exit shares by parent rank in the 1710s.
+fig_first_contracts_vs_exits_by_rank_1720s_revised.png - First-contract and major-exit shares by parent rank in the 1720s.
+fig_first_contracts_vs_exits_by_rank_1730s_revised.png - First-contract and major-exit shares by parent rank in the 1730s.
+fig_first_contracts_vs_exits_by_rank_1740s_revised.png - First-contract and major-exit shares by parent rank in the 1740s.
+fig_first_contracts_vs_exits_by_rank_1750s_revised.png - First-contract and major-exit shares by parent rank in the 1750s.
+fig_first_contracts_vs_exits_by_rank_1760s_revised.png - First-contract and major-exit shares by parent rank in the 1760s.
+fig_first_contracts_vs_exits_by_rank_1770s_revised.png - First-contract and major-exit shares by parent rank in the 1770s.
+fig_first_contracts_vs_exits_by_rank_1780s_revised.png - First-contract and major-exit shares by parent rank in the 1780s.
+fig_outcome_rates_and_first_contract_share_by_rank_revised.png - Per-rank revised outcome rates within rank and decade, shown together with first-contract share across ranks within each decade.
+fig_logit_confusion_matrix_revised.png - Logistic Regression confusion matrix for revised outcome prediction.
+fig_rf_feature_importance_revised.png - Random Forest top feature importances for revised outcome prediction.
+fig_rf_confusion_matrix_revised.png - Random Forest confusion matrix for revised outcome prediction.
+fig_logit_confusion_matrix_sensitivity_no_first_contract.png - Logistic Regression sensitivity confusion matrix without first-contract status.
+fig_rf_feature_importance_sensitivity_no_first_contract.png - Random Forest sensitivity feature importances without first-contract status.
+fig_rf_confusion_matrix_sensitivity_no_first_contract.png - Random Forest sensitivity confusion matrix without first-contract status.

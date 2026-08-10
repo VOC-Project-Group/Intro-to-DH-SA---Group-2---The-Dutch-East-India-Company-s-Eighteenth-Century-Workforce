@@ -1,0 +1,15 @@
+outcome_group_old,outcome_group_v2,count,percentage_of_dataset
+Attrition,Irregular exit,17347,2.56
+Death,Death,351404,51.91
+Repatriated,Repatriated,203890,30.12
+Repatriated,Settlement / status change,4349,0.64
+Unknown,Chamber / administrative category,43231,6.39
+Unknown,Unknown / unclear,41686,6.16
+Unknown,Absent upon departure,12489,1.84
+Unknown,Transfer / continued service,1176,0.17
+Unknown,Other / specified elsewhere,413,0.06
+Unknown,Retirement / institutional care,374,0.06
+Unknown,Unfit to work,374,0.06
+Unknown,Resignation,146,0.02
+Unknown,Irregular exit,49,0.01
+Unknown,Stayed at the Cape,6,0.0
