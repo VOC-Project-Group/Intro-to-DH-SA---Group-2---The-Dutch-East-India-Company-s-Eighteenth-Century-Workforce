@@ -1,15 +1,45 @@
 """
 01_cleaning.py
-Purpose: clean VOC workforce dataset (contracts 1700-1780), standardize regions,
-map ranks, recode outcomes, and save ready-to-use outputs.
 
-Outputs:
+Cleaning script for the VOC project.
+
+What this script does
+- Loads the raw VOC contracts dataset.
+- Creates cleaned variables used in the descriptive and modelling scripts.
+- Filters the main analysis period to contracts starting from 1700 up to, but not including, 1790.
+- Creates rank, region, decade, and other analysis variables.
+- Creates the revised outcome grouping used in the article analysis.
+- Creates a corrected first-contract indicator.
+
+Important methodological choices
+- First contracts are identified on the full dataset before applying the 1700-1780s analysis filter.
+- First contracts are treated as a proxy for new workforce entry, not as a direct hiring rate.
+- The revised outcome grouping separates:
+  * Death
+  * Repatriated
+  * Chamber
+  * Unknown / unclear
+  * Other
+  * Irregular exit
+- Chamber outcomes are kept separate because they refer to administrative chamber categories rather than clear worker exits.
+- Age and Free citizen are not treated as Unknown. They are placed in Other because they have specific meanings in the source data.
+- Shipwrecked is grouped under Death because the source interpretation indicates drowning after ship sinking.
+
+Main outputs
 - data_clean/contracts_clean.csv
-- data_clean/persons_summary.csv
-- tables/region_counts.csv
-- tables/rank_counts.csv
-- tables/outcome_counts.csv
-- docs/methods_notes.txt
+- tables/outcome_counts_revised.csv
+- tables/reason_end_contract_mapping_check_revised.csv
+
+Main columns created or updated
+- contract_start_year
+- decade
+- rank_parent
+- region_label
+- outcome_group_revised
+- outcome_group
+- has_person_cluster_id
+- is_first_contract_true
+- is_first_contract
 """
 
 import os, sys
@@ -36,11 +66,47 @@ contracts_path = os.path.join(DATA_RAW, "voc_persons_contracts.csv")
 contracts = pd.read_csv(contracts_path, low_memory=False)
 before = len(contracts)
 
-# Filter 1700–1780 (based on contract start year)
-contracts["contract_start_year"] = pd.to_datetime(
+# Convert contract start dates before calculating first contracts and filtering
+contracts["date_begin_contract"] = pd.to_datetime(
     contracts["date_begin_contract"], errors="coerce"
-).dt.year
-contracts = contracts[(contracts["contract_start_year"] >= 1700) & (contracts["contract_start_year"] < 1790)]
+)
+
+contracts["contract_start_year"] = contracts["date_begin_contract"].dt.year
+
+# Mark whether a record has a person_cluster_id.
+# First-contract status can only be identified for records with person_cluster_id.
+contracts["has_person_cluster_id"] = contracts["person_cluster_id"].notna()
+
+# Calculate true first contracts on the full dataset before filtering to 1700-1780.
+# This avoids incorrectly treating a person's first visible contract inside the filtered
+# period as their true first contract if they had an earlier contract before 1700.
+if "person_cluster_id" in contracts.columns and "date_begin_contract" in contracts.columns:
+    first_dates = (
+        contracts
+        .groupby("person_cluster_id")["date_begin_contract"]
+        .transform("min")
+    )
+
+    contracts["is_first_contract_true"] = (
+        (contracts["has_person_cluster_id"]) &
+        (contracts["date_begin_contract"] == first_dates)
+    ).astype(int)
+
+    # Keep this older column name as well, so later scripts that already use
+    # is_first_contract do not break.
+    contracts["is_first_contract"] = contracts["is_first_contract_true"]
+else:
+    contracts["is_first_contract_true"] = 0
+    contracts["is_first_contract"] = 0
+
+print("[info] Created first-contract indicator on the full dataset before filtering.")
+
+# Filter 1700-1780s for the actual analysis
+contracts = contracts[
+    (contracts["contract_start_year"] >= 1700) &
+    (contracts["contract_start_year"] < 1790)
+].copy()
+
 after = len(contracts)
 print(f"[info] Filtered contracts to 1700-1780: {before} -> {after}")
 save_csv(contracts, os.path.join(DATA_CLEAN, "contracts_filtered.csv"))
@@ -230,41 +296,142 @@ rank_counts.columns = ["rank_parent","n_contracts"]
 save_csv(rank_counts, os.path.join(TABLES, "rank_counts.csv"))
 
 # ---------- 5) Outcomes ----------
-print("[info] Recoding outcomes")
+print("[info] Recoding outcomes with revised outcome grouping")
+
 reason_col = "reason_end_contract" if "reason_end_contract" in contracts.columns else None
 contracts["reason_end_contract_raw"] = contracts[reason_col] if reason_col else np.nan
-def map_outcome(text):
-    if pd.isna(text): return "Unknown"
-    t = str(text).strip().lower()
-    if " chamber" in t: return "Unknown"
-    if any(k in t for k in ["deceased","died","death","shipwreck","execut","murder"]): return "Death"
-    if any(k in t for k in ["desert","dismiss","dismissal","penal","removed"]): return "Attrition"
-    if any(k in t for k in ["repatriat","returned home","homebound","free citizen","back to"]): return "Repatriated"
-    if any(k in t for k in ["missing","last record","unknown","not recorded","no further record","age"]): return "Unknown"
-    return "Unknown"
-contracts["outcome_group"] = contracts["reason_end_contract_raw"].apply(map_outcome)
 
-outcome_counts = contracts["outcome_group"].value_counts().reset_index()
-outcome_counts.columns = ["outcome_group","n_contracts"]
-save_csv(outcome_counts, os.path.join(TABLES, "outcome_counts.csv"))
 
-# -------------------- Mark first contracts --------------------
-if "is_first_contract" not in contracts.columns:
-    if "person_cluster_id" in contracts.columns and "date_begin_contract" in contracts.columns:
-        # Convert dates
-        contracts["date_begin_contract"] = pd.to_datetime(contracts["date_begin_contract"], errors="coerce")
+def normalize_reason(value):
+    """
+    Normalize raw reason_end_contract values before mapping.
 
-        # Find earliest contract per person
-        first_dates = (
-            contracts.groupby("person_cluster_id")["date_begin_contract"]
-            .transform("min")
-        )
+    I keep the original raw value in the data, but use this normalized version
+    only for the dictionary-based mapping.
+    """
+    if pd.isna(value):
+        return None
+    return str(value).strip().lower()
 
-        # Flag first contracts correctly
-        contracts["is_first_contract"] = (contracts["date_begin_contract"] == first_dates).astype(int)
-    else:
-        # Fallback if we really cannot do better
-        contracts["is_first_contract"] = 0
+
+OUTCOME_MAPPING_NORMALIZED = {
+    # Death
+    "deceased": "Death",
+    "shipwrecked": "Death",
+    "murdered": "Death",
+    "death penalty": "Death",
+
+    # Repatriated
+    "repatriated": "Repatriated",
+
+    # Irregular exit
+    "deserted": "Irregular exit",
+    "dismissal": "Irregular exit",
+    "dismissed": "Irregular exit",
+    "penalised or punished": "Irregular exit",
+    "penalized or punished": "Irregular exit",
+    "removed": "Irregular exit",
+    "woman": "Irregular exit",
+
+    # Chamber
+    "amsterdam chamber": "Chamber",
+    "delft chamber": "Chamber",
+    "rotterdam chamber": "Chamber",
+    "zeeland chamber": "Chamber",
+    "hoorn chamber": "Chamber",
+    "enkhuizen chamber": "Chamber",
+
+    # Unknown / unclear
+    "missing": "Unknown / unclear",
+    "unknown": "Unknown / unclear",
+    "not recorded": "Unknown / unclear",
+    "last record": "Unknown / unclear",
+
+    # Other known categories
+    "absent upon departure": "Other",
+    "age": "Other",
+    "free citizen": "Other",
+    "transferred": "Other",
+    "to a man of war": "Other",
+    "to a private ship": "Other",
+    "to regiment": "Other",
+    "remains at the cape": "Other",
+    "unfit to work": "Other",
+    "resignation": "Other",
+    "otherwise": "Other",
+    "in lening gaan": "Other",
+}
+
+contracts["reason_end_contract_normalized"] = (
+    contracts["reason_end_contract_raw"].apply(normalize_reason)
+)
+
+contracts["outcome_group_revised"] = (
+    contracts["reason_end_contract_normalized"]
+    .map(OUTCOME_MAPPING_NORMALIZED)
+)
+
+# Actual null values are treated as Unknown / unclear.
+contracts.loc[
+    contracts["reason_end_contract_raw"].isna(),
+    "outcome_group_revised"
+] = "Unknown / unclear"
+
+# Check whether any non-null categories were not mapped.
+unmapped = (
+    contracts.loc[
+        contracts["outcome_group_revised"].isna() &
+        contracts["reason_end_contract_raw"].notna(),
+        "reason_end_contract_raw"
+    ]
+    .drop_duplicates()
+    .sort_values()
+    .tolist()
+)
+
+if len(unmapped) > 0:
+    print("[warning] Unmapped reason_end_contract categories found:")
+    for item in unmapped:
+        print(f" - {item}")
+    raise ValueError("Unmapped reason_end_contract categories found. Please update OUTCOME_MAPPING_NORMALIZED.")
+
+# Keep the old column name as an alias for compatibility with older scripts.
+# Later, 02_descriptives.py and 03_models.py should be updated to use
+# outcome_group_revised explicitly.
+contracts["outcome_group"] = contracts["outcome_group_revised"]
+
+outcome_counts = contracts["outcome_group_revised"].value_counts().reset_index()
+outcome_counts.columns = ["outcome_group_revised", "n_contracts"]
+save_csv(outcome_counts, os.path.join(TABLES, "outcome_counts_revised.csv"))
+
+# Also save a mapping check table for transparency.
+outcome_mapping_check = (
+    contracts
+    .assign(reason_end_contract_raw_for_table=contracts["reason_end_contract_raw"].fillna("NULL"))
+    .groupby(
+        [
+            "reason_end_contract_raw_for_table",
+            "reason_end_contract_normalized",
+            "outcome_group_revised"
+        ],
+        dropna=False
+    )
+    .size()
+    .reset_index(name="n_contracts")
+    .sort_values("n_contracts", ascending=False)
+)
+
+outcome_mapping_check.columns = [
+    "reason_end_contract_raw",
+    "reason_end_contract_normalized",
+    "outcome_group_revised",
+    "n_contracts"
+]
+
+save_csv(
+    outcome_mapping_check,
+    os.path.join(TABLES, "reason_end_contract_mapping_check_revised.csv")
+)
 
 
 # ---------- 6) Save outputs ----------
@@ -282,7 +449,7 @@ with open(notes_path,"w",encoding="utf-8") as f:
     f.write("\nRanks\n")
     f.write("- Ranks mapped to 6 parent categories; seniority derived from wage quintiles.\n")
     f.write("\nOutcomes\n")
-    f.write("- Outcomes grouped into: Death / Repatriated / Attrition / Unknown.\n")
+    f.write("- Outcomes grouped into: Death, Repatriated, Chamber, Unknown / unclear, Other, and Irregular exit.\n")
 print(f"[updated] {notes_path}")
 
 print("[done] Cleaning complete.")

@@ -5,28 +5,44 @@ Descriptive outputs for the VOC project.
 
 What this script does
 - Builds crosstabs (tables/*.csv) for:
-  * region x rank_parent (counts and %)
-  * outcome_group x rank_parent (counts and %)
-  * region x outcome_group (counts and %)
+  * region x rank_parent, counts and percentages
+  * revised outcome group x rank_parent, counts and percentages
+  * region x revised outcome group, counts and percentages
 
-- Makes figures (figures/*.png):
-  * fig_region_by_rank_parent.png       (stacked bars; legend outside)
-  * fig_rank_parent_by_outcome.png      (stacked bars; legend outside)
-  * fig_trend_over_time.png             (foreign share, attrition, death, high-rank by decade; legend outside)
-  * fig_death_vs_recruitment.png        (death rate vs. inflow of new workers by decade; legend outside)
-  * fig_death_vs_recruitment_by_rank.png        (per-rank death rate and recruitment share, all decades; legend outside)
-  * fig_death_vs_recruitment_by_rank_1700s.png  (same, per-decade panels 1700s ... 1780s)
-  * ...
-  * fig_death_vs_recruitment_by_rank_1780s.png
+- Makes revised figures (figures/*.png):
+  * fig_region_by_rank_parent.png
+  * fig_rank_parent_by_outcome_revised.png
+  * fig_trend_over_time_revised.png
+  * fig_death_rate_and_first_contract_rate_by_decade.png
+  * fig_first_contracts_vs_exits_by_rank_revised.png
+  * fig_first_contracts_vs_exits_by_rank_1700s_revised.png ... fig_first_contracts_vs_exits_by_rank_1780s_revised.png
+  * fig_outcome_rates_and_first_contract_share_by_rank_revised.png
 
-- Updates docs/figure_captions.txt (without duplicating lines).
+- Saves revised descriptive tables, including:
+  * trend_by_decade_revised.csv
+  * first_contracts_vs_exits_by_rank_revised.csv
+  * first_contracts_vs_exits_by_rank_1700s_revised.csv ... first_contracts_vs_exits_by_rank_1780s_revised.csv
+  * outcome_rates_and_first_contract_share_by_decade_rank_revised.csv
 
-Inputs (produced by 01_cleaning.py)
+- Updates docs/figure_captions_revised.txt.
+
+Inputs produced by 01_cleaning.py
 - data_clean/contracts_clean.csv
 
+Main columns used
+- outcome_group_revised
+- outcome_group_for_descriptives
+- is_first_contract_true
+- first_contract_for_descriptives
+- decade
+- rank_parent
+- region_label
+
 Notes
-- Labels on stacked bars appear only when a segment is >= 1% (no labels for tiny segments).
-- If is_first_contract or decade are missing, the script computes conservative fallbacks.
+- Labels on stacked bars appear only when a segment is >= 1%.
+- First contracts are treated as a proxy for new workforce entry, not as a direct hiring rate.
+- The revised figures compare first-contract patterns with major exit outcomes, especially Death and Repatriated.
+- If revised columns are missing, the script falls back to older compatible columns where possible.
 """
 
 import os
@@ -115,6 +131,34 @@ def stacked_bar_with_threshold_labels(pct_df, title, out_path, ylabel="Share", l
 contracts_path = os.path.join(DATA_CLEAN, "contracts_clean.csv")
 contracts = pd.read_csv(contracts_path, low_memory=False)
 
+# -------------------- Revised column aliases --------------------
+# 01_cleaning.py now creates outcome_group_revised and is_first_contract_true.
+# I keep local aliases here so the descriptive script is explicit and easy to update.
+if "outcome_group_revised" in contracts.columns:
+    OUTCOME_COL = "outcome_group_revised"
+elif "outcome_group" in contracts.columns:
+    OUTCOME_COL = "outcome_group"
+else:
+    raise ValueError("No outcome grouping column found. Expected outcome_group_revised or outcome_group.")
+
+if "is_first_contract_true" in contracts.columns:
+    FIRST_CONTRACT_COL = "is_first_contract_true"
+elif "is_first_contract" in contracts.columns:
+    FIRST_CONTRACT_COL = "is_first_contract"
+else:
+    FIRST_CONTRACT_COL = None
+
+# Keep compatibility columns so older parts of the script do not break while the script is being updated.
+contracts["outcome_group_for_descriptives"] = contracts[OUTCOME_COL]
+
+if FIRST_CONTRACT_COL is not None:
+    contracts["first_contract_for_descriptives"] = contracts[FIRST_CONTRACT_COL]
+else:
+    contracts["first_contract_for_descriptives"] = 0
+
+print(f"[info] Using outcome column: {OUTCOME_COL}")
+print(f"[info] Using first-contract column: {FIRST_CONTRACT_COL}")
+
 # -------------------- Defensive fallbacks --------------------
 # Ensure decade exists
 if "decade" not in contracts.columns:
@@ -128,8 +172,19 @@ if "decade" not in contracts.columns:
     else:
         contracts["decade"] = np.nan
 
-# Preferred visual order of ranks (kept if present)
-RANK_ORDER = ["Medical", "Military", "Other", "Sea", "Ship", "Trade", "Unknown"]
+# Preferred visual order of ranks.
+# I use the same order as in the revised benchmark script, so outputs are easier to compare.
+RANK_ORDER = ["Sea", "Military", "Ship", "Other", "Medical", "Trade", "Unknown"]
+
+# Revised outcome order used after updating 01_cleaning.py.
+OUTCOME_ORDER = [
+    "Death",
+    "Repatriated",
+    "Chamber",
+    "Unknown / unclear",
+    "Other",
+    "Irregular exit",
+]
 
 # -------------------- Crosstabs (counts & %) --------------------
 def crosstab_counts_and_pct(df, row, col, counts_path, pct_path):
@@ -145,15 +200,27 @@ c1_path = os.path.join(TABLES, "region_by_rank_parent_count.csv")
 p1_path = os.path.join(TABLES, "region_by_rank_parent_pct.csv")
 counts_rp, pct_rp = crosstab_counts_and_pct(contracts, "region_label", "rank_parent", c1_path, p1_path)
 
-# outcome_group x rank_parent
-c2_path = os.path.join(TABLES, "rank_parent_by_outcome_count.csv")
-p2_path = os.path.join(TABLES, "rank_parent_by_outcome_pct.csv")
-counts_or, pct_or = crosstab_counts_and_pct(contracts, "outcome_group", "rank_parent", c2_path, p2_path)
+# revised outcome group x rank_parent
+c2_path = os.path.join(TABLES, "rank_parent_by_outcome_revised_count.csv")
+p2_path = os.path.join(TABLES, "rank_parent_by_outcome_revised_pct.csv")
+counts_or, pct_or = crosstab_counts_and_pct(
+    contracts,
+    "outcome_group_for_descriptives",
+    "rank_parent",
+    c2_path,
+    p2_path
+)
 
-# the region x outcome_group
-c3_path = os.path.join(TABLES, "region_by_outcome_group_count.csv")
-p3_path = os.path.join(TABLES, "region_by_outcome_group_pct.csv")
-counts_ro, pct_ro = crosstab_counts_and_pct(contracts, "region_label", "outcome_group", c3_path, p3_path)
+# Crosstab: geographic region x revised outcome group
+c3_path = os.path.join(TABLES, "region_by_outcome_group_revised_count.csv")
+p3_path = os.path.join(TABLES, "region_by_outcome_group_revised_pct.csv")
+counts_ro, pct_ro = crosstab_counts_and_pct(
+    contracts,
+    "region_label",
+    "outcome_group_for_descriptives",
+    c3_path,
+    p3_path
+)
 
 # -------------------- Figures: stacked bars (legend outside) --------------------
 # Region by Rank (share within rank): rows=ranks, columns=regions
@@ -169,341 +236,559 @@ stacked_bar_with_threshold_labels(
     pct_rank_rows, "Region by Rank (share within rank)", fig1, ylabel="Share", legend_title="region_label"
 )
 
-# Rank by Outcome (share within outcome): rows=outcomes, columns=ranks
+# Rank by revised outcome group: rows=outcomes, columns=ranks
 pct_outcome_rows = pd.crosstab(
-    contracts["outcome_group"], contracts["rank_parent"], normalize="index"
+    contracts["outcome_group_for_descriptives"],
+    contracts["rank_parent"],
+    normalize="index"
 ) * 100.0
-pct_outcome_rows = pct_outcome_rows.round(2)
-# reorder columns if possible
-pct_outcome_rows = pct_outcome_rows.reindex(columns=[r for r in RANK_ORDER if r in pct_outcome_rows.columns], fill_value=0.0)
 
-fig2 = os.path.join(FIGURES, "fig_rank_parent_by_outcome.png")
+pct_outcome_rows = pct_outcome_rows.round(2)
+
+# Reorder outcome rows and rank columns where possible.
+rows = [o for o in OUTCOME_ORDER if o in pct_outcome_rows.index] + [
+    o for o in pct_outcome_rows.index if o not in OUTCOME_ORDER
+]
+cols = [r for r in RANK_ORDER if r in pct_outcome_rows.columns] + [
+    c for c in pct_outcome_rows.columns if c not in RANK_ORDER
+]
+
+pct_outcome_rows = pct_outcome_rows.loc[rows, cols]
+
+fig2 = os.path.join(FIGURES, "fig_rank_parent_by_outcome_revised.png")
+
 stacked_bar_with_threshold_labels(
-    pct_outcome_rows, "Rank by Outcome (share within outcome)", fig2, ylabel="Share", legend_title="rank_parent"
+    pct_outcome_rows,
+    "Parent rank distribution within revised outcome groups",
+    fig2,
+    ylabel="Share within revised outcome group",
+    legend_title="Rank"
 )
 
-# -------------------- Trends by decade (legend outside) --------------------
-def mean_if_any_bool(s, cond):
-    s = s.astype(str)
-    return np.mean(s == cond) if s.notna().any() else np.nan
+# -------------------- Revised trends by decade --------------------
+def outcome_rate(series, outcome_name):
+    """
+    Calculate the share of records in a decade that belong to one revised outcome group.
+    """
+    series = series.astype(str)
+    return np.mean(series == outcome_name) if series.notna().any() else np.nan
+
 
 trend = (
     contracts.groupby("decade", as_index=False)
     .agg(
         foreign_share=("is_dutch", lambda s: 1 - s.mean() if s.notna().any() else np.nan),
-        attrition_rate=("outcome_group", lambda s: mean_if_any_bool(s, "Attrition")),
-        death_rate=("outcome_group", lambda s: mean_if_any_bool(s, "Death")),
+        death_rate=("outcome_group_for_descriptives", lambda s: outcome_rate(s, "Death")),
+        repatriated_rate=("outcome_group_for_descriptives", lambda s: outcome_rate(s, "Repatriated")),
+        irregular_exit_rate=("outcome_group_for_descriptives", lambda s: outcome_rate(s, "Irregular exit")),
         high_rank_share=("is_high_rank", "mean"),
-        new_workers=("is_first_contract", "sum"),
-        contracts_n=("is_first_contract", "size"),
+        first_contracts_n=("first_contract_for_descriptives", "sum"),
+        contracts_n=("first_contract_for_descriptives", "size"),
     )
 )
-trend_path = os.path.join(TABLES, "trend_by_decade.csv")
+
+trend["first_contract_rate"] = trend["first_contracts_n"] / trend["contracts_n"]
+
+trend_path = os.path.join(TABLES, "trend_by_decade_revised.csv")
 save_csv(trend, trend_path)
 
 t = trend.sort_values("decade").copy()
-for col in ["foreign_share", "attrition_rate", "death_rate", "high_rank_share"]:
+
+for col in [
+    "foreign_share",
+    "death_rate",
+    "repatriated_rate",
+    "irregular_exit_rate",
+    "high_rank_share",
+    "first_contract_rate",
+]:
     t[col] = pd.to_numeric(t[col], errors="coerce")
 
 fig, ax = plt.subplots(figsize=(10.5, 6))
 ax.plot(t["decade"].to_numpy(), t["foreign_share"].to_numpy(), marker="o", label="Foreign share")
-ax.plot(t["decade"].to_numpy(), t["attrition_rate"].to_numpy(), marker="o", label="Attrition rate")
 ax.plot(t["decade"].to_numpy(), t["death_rate"].to_numpy(), marker="o", label="Death rate")
+ax.plot(t["decade"].to_numpy(), t["repatriated_rate"].to_numpy(), marker="o", label="Repatriated rate")
+ax.plot(t["decade"].to_numpy(), t["irregular_exit_rate"].to_numpy(), marker="o", label="Irregular exit rate")
 ax.plot(t["decade"].to_numpy(), t["high_rank_share"].to_numpy(), marker="o", label="High-rank share")
 ax.set_xlabel("Decade")
 ax.set_ylabel("Rate")
-ax.set_title("Trends by decade")
+ax.set_title("Revised outcome and workforce trends by decade")
 legend_outside(ax)
 plt.subplots_adjust(right=0.78)
 plt.tight_layout()
-fig3 = os.path.join(FIGURES, "fig_trend_over_time.png")
-plt.savefig(fig3, dpi=180); plt.close()
+
+fig3 = os.path.join(FIGURES, "fig_trend_over_time_revised.png")
+plt.savefig(fig3, dpi=180)
+plt.close()
 print(f"[saved] {fig3}")
 
-# -------------------- Deaths vs recruitment by decade (legend outside) --------------------
-t["new_workers"] = pd.to_numeric(t["new_workers"], errors="coerce").fillna(0)
-max_new = t["new_workers"].max()
-nw_norm = (t["new_workers"] / max_new) if max_new > 0 else t["new_workers"]
 
+# -------------------- Death rate and first-contract rate by decade --------------------
 fig, ax = plt.subplots(figsize=(10.5, 6))
 ax.plot(t["decade"].to_numpy(), t["death_rate"].to_numpy(), marker="o", label="Death rate")
-ax.plot(t["decade"].to_numpy(), nw_norm.to_numpy(), marker="o", label="Recruitment (normalised)")
+ax.plot(t["decade"].to_numpy(), t["first_contract_rate"].to_numpy(), marker="o", label="First-contract rate")
 ax.set_xlabel("Decade")
-ax.set_ylabel("Rate / Normalised inflow")
-ax.set_title("Death rate vs recruitment by decade")
+ax.set_ylabel("Rate")
+ax.set_title("Death rate and first-contract rate by decade")
 legend_outside(ax)
 plt.subplots_adjust(right=0.78)
 plt.tight_layout()
-fig4 = os.path.join(FIGURES, "fig_death_vs_recruitment.png")
-plt.savefig(fig4, dpi=180); plt.close()
+
+fig4 = os.path.join(FIGURES, "fig_death_rate_and_first_contract_rate_by_decade.png")
+plt.savefig(fig4, dpi=180)
+plt.close()
 print(f"[saved] {fig4}")
 
-# -------------------- Helper: per-rank stats --------------------
-def per_rank_death_recruit(group_df):
+# -------------------- Helper: per-rank first-contract and exit stats --------------------
+def per_rank_first_contract_exit_stats(group_df):
     """
-    Returns a per-rank summary with:
-      - contracts_n (total contracts)
-      - deaths_n (number of Death outcomes)
-      - recruits_n (number of first-time contracts)
-      - death_rate = deaths_n / contracts_n
-      - recruitment_share = recruits_n / total recruits
+    Create a per-rank summary comparing first contracts with major exit outcomes.
+
+    This uses:
+    - first contracts as a proxy for new workforce entry
+    - Death
+    - Repatriated
+    - Death + Repatriated
+
+    The shares are distributional shares across rank groups, not within-rank rates.
+    This matches the revised benchmark interpretation.
     """
+
     out = (
         group_df.groupby("rank_parent", as_index=False)
         .agg(
-            contracts_n=("outcome_group", "size"),
-            deaths_n=("outcome_group", lambda s: (s == "Death").sum()),
-            recruits_n=("is_first_contract", lambda s: (s == 1).sum()),
+            contracts_n=("outcome_group_for_descriptives", "size"),
+            first_contracts_n=("first_contract_for_descriptives", lambda s: (s == 1).sum()),
+            deaths_n=("outcome_group_for_descriptives", lambda s: (s == "Death").sum()),
+            repatriated_n=("outcome_group_for_descriptives", lambda s: (s == "Repatriated").sum()),
         )
     )
-    out["death_rate"] = out["deaths_n"] / out["contracts_n"]
-    total_recruits = out["recruits_n"].sum()
-    out["recruitment_share"] = (
-        out["recruits_n"] / total_recruits if total_recruits > 0 else 0.0
+
+    out["death_repatriated_n"] = out["deaths_n"] + out["repatriated_n"]
+
+    totals = {
+        "contracts_n": out["contracts_n"].sum(),
+        "first_contracts_n": out["first_contracts_n"].sum(),
+        "deaths_n": out["deaths_n"].sum(),
+        "repatriated_n": out["repatriated_n"].sum(),
+        "death_repatriated_n": out["death_repatriated_n"].sum(),
+    }
+
+    out["all_records_share"] = np.where(
+        totals["contracts_n"] > 0,
+        out["contracts_n"] / totals["contracts_n"] * 100,
+        np.nan
+    ).round(2)
+
+    out["first_contract_share"] = np.where(
+        totals["first_contracts_n"] > 0,
+        out["first_contracts_n"] / totals["first_contracts_n"] * 100,
+        np.nan
+    ).round(2)
+
+    out["death_share"] = np.where(
+        totals["deaths_n"] > 0,
+        out["deaths_n"] / totals["deaths_n"] * 100,
+        np.nan
+    ).round(2)
+
+    out["repatriated_share"] = np.where(
+        totals["repatriated_n"] > 0,
+        out["repatriated_n"] / totals["repatriated_n"] * 100,
+        np.nan
+    ).round(2)
+
+    out["death_repatriated_share"] = np.where(
+        totals["death_repatriated_n"] > 0,
+        out["death_repatriated_n"] / totals["death_repatriated_n"] * 100,
+        np.nan
+    ).round(2)
+
+    out["first_contract_minus_death_share"] = (
+        out["first_contract_share"] - out["death_share"]
+    ).round(2)
+
+    out["first_contract_minus_repatriated_share"] = (
+        out["first_contract_share"] - out["repatriated_share"]
+    ).round(2)
+
+    out["first_contract_minus_death_repatriated_share"] = (
+        out["first_contract_share"] - out["death_repatriated_share"]
+    ).round(2)
+
+    out["death_rate_within_rank"] = np.where(
+        out["contracts_n"] > 0,
+        out["deaths_n"] / out["contracts_n"] * 100,
+        np.nan
+    ).round(2)
+
+    out["repatriated_rate_within_rank"] = np.where(
+        out["contracts_n"] > 0,
+        out["repatriated_n"] / out["contracts_n"] * 100,
+        np.nan
+    ).round(2)
+
+    out["death_repatriated_rate_within_rank"] = np.where(
+        out["contracts_n"] > 0,
+        out["death_repatriated_n"] / out["contracts_n"] * 100,
+        np.nan
+    ).round(2)
+
+    out["rank_parent"] = pd.Categorical(
+        out["rank_parent"],
+        categories=RANK_ORDER,
+        ordered=True
     )
+
+    out = out.sort_values("rank_parent").reset_index(drop=True)
+
     return out
 
 
-# -------------------- Death vs recruitment by rank (overall) --------------------
-overall_rank = per_rank_death_recruit(contracts)
-rank_tbl_path = os.path.join(TABLES, "death_recruitment_by_rank.csv")
-save_csv(overall_rank, rank_tbl_path)
+def plot_rank_first_contract_exit_shares(rank_df, title, output_path):
+    """
+    Plot distributional shares by rank.
 
-# Ensure numeric arrays (NaNs -> 0) and a consistent category order
-cats = ["Military", "Sea", "Ship", "Medical", "Trade", "Other", "Unknown"]
-overall_rank = overall_rank.copy()
-overall_rank["rank_parent"] = pd.Categorical(overall_rank["rank_parent"], categories=cats, ordered=True)
-overall_rank = overall_rank.sort_values("rank_parent")
+    This figure compares:
+      - first-contract share
+      - death share
+      - repatriated share
+      - death + repatriated share
+    """
 
-x = np.arange(len(overall_rank))
-width = 0.38
-y1 = pd.to_numeric(overall_rank["death_rate"], errors="coerce").fillna(0.0).to_numpy()
-y2 = pd.to_numeric(overall_rank["recruitment_share"], errors="coerce").fillna(0.0).to_numpy()
+    plot_df = rank_df.copy()
+    plot_df["rank_parent"] = pd.Categorical(
+        plot_df["rank_parent"],
+        categories=RANK_ORDER,
+        ordered=True
+    )
+    plot_df = plot_df.sort_values("rank_parent")
 
-fig, ax = plt.subplots(figsize=(9, 6))
-ax.bar(x - width/2, y1, width, label="Death rate")
-ax.bar(x + width/2, y2, width, label="Recruitment share")
-ax.set_xticks(x)
-ax.set_xticklabels(overall_rank["rank_parent"].astype(str).tolist(), rotation=0)
-ax.set_ylabel("Rate / Share")
-ax.set_title("Deaths vs. Recruitment by rank (all decades)")
+    x = np.arange(len(plot_df))
+    width = 0.20
 
-# Put legend outside
-handles, labels = ax.get_legend_handles_labels()
-leg = ax.legend(handles, labels, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=True)
-leg.get_frame().set_alpha(0.9)
+    y_first = pd.to_numeric(plot_df["first_contract_share"], errors="coerce").fillna(0.0).to_numpy()
+    y_death = pd.to_numeric(plot_df["death_share"], errors="coerce").fillna(0.0).to_numpy()
+    y_rep = pd.to_numeric(plot_df["repatriated_share"], errors="coerce").fillna(0.0).to_numpy()
+    y_exit = pd.to_numeric(plot_df["death_repatriated_share"], errors="coerce").fillna(0.0).to_numpy()
 
-# Make sure we have a sensible y-limit even if values are small
-ymax = float(np.nanmax(np.r_[y1, y2])) if (len(y1) and len(y2)) else 0.0
-ax.set_ylim(0, max(0.01, ymax) * 1.15)
+    fig, ax = plt.subplots(figsize=(11, 6))
 
-fig.tight_layout()
-fig.savefig(os.path.join(FIGURES, "fig_death_vs_recruitment_by_rank.png"), dpi=180, bbox_inches="tight")
-plt.close(fig)
-print(f"[saved] {os.path.join(FIGURES, 'fig_death_vs_recruitment_by_rank.png')}")
+    ax.bar(x - 1.5 * width, y_first, width, label="First-contract share")
+    ax.bar(x - 0.5 * width, y_death, width, label="Death share")
+    ax.bar(x + 0.5 * width, y_rep, width, label="Repatriated share")
+    ax.bar(x + 1.5 * width, y_exit, width, label="Death + repatriated share")
 
-# -------------------- Death vs recruitment by rank (per decade panels) --------------------
-decades = sorted([int(d) for d in contracts["decade"].dropna().unique()])
-for dec in decades:
-    sub = contracts[contracts["decade"] == dec]
-    if sub.empty:
-        continue
-
-    rstats = per_rank_death_recruit(sub).copy()
-    rstats["rank_parent"] = pd.Categorical(rstats["rank_parent"], categories=cats, ordered=True)
-    rstats = rstats.sort_values("rank_parent")
-
-    # Save table
-    tbl_path = os.path.join(TABLES, f"death_recruitment_by_rank_{dec}s.csv")
-    save_csv(rstats, tbl_path)
-
-    x = np.arange(len(rstats))
-    y1 = pd.to_numeric(rstats["death_rate"], errors="coerce").fillna(0.0).to_numpy()
-    y2 = pd.to_numeric(rstats["recruitment_share"], errors="coerce").fillna(0.0).to_numpy()
-
-    fig, ax = plt.subplots(figsize=(9, 6))
-    ax.bar(x - width/2, y1, width, label="Death rate")
-    ax.bar(x + width/2, y2, width, label="Recruitment share")
     ax.set_xticks(x)
-    ax.set_xticklabels(rstats["rank_parent"].astype(str).tolist(), rotation=0)
-    ax.set_ylabel("Rate / Share")
-    ax.set_title(f"Deaths vs. Recruitment by rank — {dec}s")
+    ax.set_xticklabels(plot_df["rank_parent"].astype(str).tolist(), rotation=0)
+    ax.set_ylabel("Share across rank groups (%)")
+    ax.set_title(title)
 
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=True)
     leg.get_frame().set_alpha(0.9)
 
-    ymax = float(np.nanmax(np.r_[y1, y2])) if (len(y1) and len(y2)) else 0.0
-    ax.set_ylim(0, max(0.01, ymax) * 1.15)
+    ymax = float(np.nanmax(np.r_[y_first, y_death, y_rep, y_exit])) if len(plot_df) else 0.0
+    ax.set_ylim(0, max(1.0, ymax) * 1.15)
 
-    outp = os.path.join(FIGURES, f"fig_death_vs_recruitment_by_rank_{dec}s.png")
     fig.tight_layout()
-    fig.savefig(outp, dpi=180, bbox_inches="tight")
+    fig.savefig(output_path, dpi=180, bbox_inches="tight")
     plt.close(fig)
-    print(f"[saved] {outp}")
+    print(f"[saved] {output_path}")
 
-# -------------------- NEW (updated): Outcome rates + recruitment by decade (small multiples by rank) --------------------
-# This produces one figure with panels per rank. Each panel shows:
-#   - Lines for outcome rates within the rank & decade (Attrition/Death/Repatriated/Unknown) -> each is n_outcome / n_contracts for that (decade, rank)
-#   - One extra line for RECRUITMENT SHARE of that rank in that decade -> recruits_in_rank_decade / total_recruits_in_decade (across all ranks)
+
+# -------------------- First contracts vs exits by rank, overall --------------------
+overall_rank = per_rank_first_contract_exit_stats(contracts)
+
+rank_tbl_path = os.path.join(TABLES, "first_contracts_vs_exits_by_rank_revised.csv")
+save_csv(overall_rank, rank_tbl_path)
+
+plot_rank_first_contract_exit_shares(
+    overall_rank,
+    "First contracts vs major exits by rank, all decades",
+    os.path.join(FIGURES, "fig_first_contracts_vs_exits_by_rank_revised.png")
+)
+
+
+# -------------------- First contracts vs exits by rank, per decade --------------------
+decades = sorted([int(d) for d in contracts["decade"].dropna().unique()])
+
+for dec in decades:
+    sub = contracts[contracts["decade"] == dec]
+
+    if sub.empty:
+        continue
+
+    rstats = per_rank_first_contract_exit_stats(sub)
+
+    tbl_path = os.path.join(TABLES, f"first_contracts_vs_exits_by_rank_{dec}s_revised.csv")
+    save_csv(rstats, tbl_path)
+
+    fig_path = os.path.join(FIGURES, f"fig_first_contracts_vs_exits_by_rank_{dec}s_revised.png")
+
+    plot_rank_first_contract_exit_shares(
+        rstats,
+        f"First contracts vs major exits by rank, {dec}s",
+        fig_path
+    )
+
+# -------------------- Revised small multiples: outcome rates + first-contract share --------------------
+# This figure shows one panel per rank.
 #
-# NOTE: Outcome rates are normalized *within rank & decade*; Recruitment is normalized *across ranks within the decade*.
-# Both are 0..1, but denominators differ — that’s intentional for comparing loss burden vs where recruitment concentrated.
+# Each panel includes:
+#   - Death rate within that rank and decade
+#   - Repatriated rate within that rank and decade
+#   - Death + Repatriated rate within that rank and decade
+#   - First-contract share of that rank within the decade
+#
+# Important:
+# Outcome rates are normalized within each rank and decade:
+#   n_outcome / n_contracts for that rank and decade
+#
+# First-contract share is normalized across ranks within each decade:
+#   first_contracts_in_rank_decade / total_first_contracts_in_decade
+#
+# These denominators are different, so the figure should be interpreted carefully.
+# It is useful for visual comparison, but the benchmark tables remain the main
+# evidence for the first-contract vs exit argument.
 
-OUTCOME_ORDER = ["Attrition", "Death", "Repatriated", "Unknown"]
-_ranks_present = sorted(contracts["rank_parent"].dropna().unique().tolist())
-RANKS_FOR_FACETS = [r for r in RANK_ORDER if r in _ranks_present] or _ranks_present
-
-# --- 1) Base tidy table: counts by decade × rank × outcome
-base = (
-    contracts
-    .dropna(subset=["decade", "rank_parent", "outcome_group"])
-    .groupby(["decade", "rank_parent", "outcome_group"], as_index=False)
-    .size()
-    .rename(columns={"size": "n_outcome"})
-)
-
-# total contracts per (decade, rank) for within-group rates
-tot_rank_dec = (
-    contracts
-    .dropna(subset=["decade", "rank_parent"])
-    .groupby(["decade", "rank_parent"], as_index=False)
-    .size()
-    .rename(columns={"size": "n_contracts_rank_dec"})
-)
-rates_long = base.merge(tot_rank_dec, on=["decade", "rank_parent"], how="left")
-rates_long["rate"] = rates_long["n_outcome"] / rates_long["n_contracts_rank_dec"].replace(0, np.nan)
-
-# tidy categories
-rates_long["outcome_group"] = pd.Categorical(rates_long["outcome_group"], categories=OUTCOME_ORDER, ordered=True)
-rates_long["rank_parent"] = pd.Categorical(rates_long["rank_parent"], categories=RANKS_FOR_FACETS, ordered=True)
-
-# --- 2) Recruitment share per (decade, rank)
-# Recruits = is_first_contract == 1
-recr_rank_dec = (
-    contracts
-    .dropna(subset=["decade", "rank_parent"])
-    .groupby(["decade", "rank_parent"], as_index=False)
-    .agg(recruits_n=("is_first_contract", lambda s: int((s == 1).sum())))
-)
-recr_by_dec = (
-    recr_rank_dec
-    .groupby("decade", as_index=False)["recruits_n"].sum()
-    .rename(columns={"recruits_n": "recruits_total_dec"})
-)
-recr_rank_dec = recr_rank_dec.merge(recr_by_dec, on="decade", how="left")
-recr_rank_dec["recruitment_share"] = (
-    recr_rank_dec["recruits_n"] / recr_rank_dec["recruits_total_dec"].replace(0, np.nan)
-)
-
-# --- 3) Save a wide CSV: outcome rates + recruitment share
-# Pivot outcome rates to columns, then attach recruitment share
-rates_wide = (
-    rates_long
-    .pivot_table(index=["decade", "rank_parent"], columns="outcome_group", values="rate", fill_value=0.0)
-    .reset_index()
-    .rename_axis(None, axis=1)
-)
-rates_wide = rates_wide.merge(
-    recr_rank_dec[["decade", "rank_parent", "recruitment_share"]],
-    on=["decade", "rank_parent"], how="left"
-).fillna({"recruitment_share": 0.0})
-
-save_csv(rates_wide, os.path.join(TABLES, "outcome_rates_and_recruitment_by_decade_rank.csv"))
-
-# --- 4) Plot: small multiples by rank (lines: outcomes + recruitment share)
 import math
+
+RANKS_PRESENT = sorted(contracts["rank_parent"].dropna().unique().tolist())
+RANKS_FOR_FACETS = [r for r in RANK_ORDER if r in RANKS_PRESENT] or RANKS_PRESENT
+
+# Base counts by decade and rank
+rank_decade_base = (
+    contracts
+    .dropna(subset=["decade", "rank_parent"])
+    .groupby(["decade", "rank_parent"], as_index=False)
+    .agg(
+        contracts_n=("outcome_group_for_descriptives", "size"),
+        deaths_n=("outcome_group_for_descriptives", lambda s: int((s == "Death").sum())),
+        repatriated_n=("outcome_group_for_descriptives", lambda s: int((s == "Repatriated").sum())),
+        first_contracts_n=("first_contract_for_descriptives", lambda s: int((s == 1).sum())),
+    )
+)
+
+rank_decade_base["death_repatriated_n"] = (
+    rank_decade_base["deaths_n"] + rank_decade_base["repatriated_n"]
+)
+
+# Within-rank outcome rates
+rank_decade_base["death_rate"] = (
+    rank_decade_base["deaths_n"] /
+    rank_decade_base["contracts_n"].replace(0, np.nan)
+)
+
+rank_decade_base["repatriated_rate"] = (
+    rank_decade_base["repatriated_n"] /
+    rank_decade_base["contracts_n"].replace(0, np.nan)
+)
+
+rank_decade_base["death_repatriated_rate"] = (
+    rank_decade_base["death_repatriated_n"] /
+    rank_decade_base["contracts_n"].replace(0, np.nan)
+)
+
+# First-contract share across ranks within each decade
+first_contracts_by_decade = (
+    rank_decade_base
+    .groupby("decade", as_index=False)["first_contracts_n"]
+    .sum()
+    .rename(columns={"first_contracts_n": "first_contracts_total_decade"})
+)
+
+rank_decade_base = rank_decade_base.merge(
+    first_contracts_by_decade,
+    on="decade",
+    how="left"
+)
+
+rank_decade_base["first_contract_share_within_decade"] = (
+    rank_decade_base["first_contracts_n"] /
+    rank_decade_base["first_contracts_total_decade"].replace(0, np.nan)
+)
+
+# Difference columns for quick inspection
+rank_decade_base["first_contract_minus_death_share"] = (
+    rank_decade_base["first_contract_share_within_decade"] -
+    rank_decade_base.groupby("decade")["deaths_n"].transform(
+        lambda s: s / s.sum() if s.sum() > 0 else np.nan
+    )
+)
+
+rank_decade_base["first_contract_minus_repatriated_share"] = (
+    rank_decade_base["first_contract_share_within_decade"] -
+    rank_decade_base.groupby("decade")["repatriated_n"].transform(
+        lambda s: s / s.sum() if s.sum() > 0 else np.nan
+    )
+)
+
+rank_decade_base["first_contract_minus_death_repatriated_share"] = (
+    rank_decade_base["first_contract_share_within_decade"] -
+    rank_decade_base.groupby("decade")["death_repatriated_n"].transform(
+        lambda s: s / s.sum() if s.sum() > 0 else np.nan
+    )
+)
+
+# Save table
+small_multiples_table = rank_decade_base.copy()
+
+percentage_cols = [
+    "death_rate",
+    "repatriated_rate",
+    "death_repatriated_rate",
+    "first_contract_share_within_decade",
+    "first_contract_minus_death_share",
+    "first_contract_minus_repatriated_share",
+    "first_contract_minus_death_repatriated_share",
+]
+
+for col in percentage_cols:
+    small_multiples_table[col] = (small_multiples_table[col] * 100).round(2)
+
+save_csv(
+    small_multiples_table,
+    os.path.join(TABLES, "outcome_rates_and_first_contract_share_by_decade_rank_revised.csv")
+)
+
+# Plot small multiples
 n = len(RANKS_FOR_FACETS)
+
 if n == 0:
-    print("[warn] No ranks to plot for outcome + recruitment trends.")
+    print("[warn] No ranks to plot for revised outcome and first-contract trends.")
 else:
     ncols = 3
     nrows = int(math.ceil(n / ncols))
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(11.5, 3.6*nrows), sharex=True, sharey=True)
+
+    fig, axes = plt.subplots(
+        nrows=nrows,
+        ncols=ncols,
+        figsize=(11.5, 3.6 * nrows),
+        sharex=True,
+        sharey=True
+    )
+
     if not isinstance(axes, np.ndarray):
         axes = np.array([axes])
+
     axes = axes.flatten()
 
     global_handles, global_labels = None, None
 
     for i, rank in enumerate(RANKS_FOR_FACETS):
         ax = axes[i]
-        # outcomes
-        sub = rates_long[rates_long["rank_parent"] == rank].copy()
-        # recruitment (for this rank)
-        rr = recr_rank_dec[recr_rank_dec["rank_parent"] == rank].copy()
 
-        if sub.empty and rr.empty:
+        sub = rank_decade_base[rank_decade_base["rank_parent"] == rank].copy()
+
+        if sub.empty:
             ax.set_visible(False)
             continue
 
-        # X axis sorted
-        if not sub.empty:
-            sub["decade"] = pd.to_numeric(sub["decade"], errors="coerce")
-            sub = sub.sort_values(["decade", "outcome_group"])
-        if not rr.empty:
-            rr["decade"] = pd.to_numeric(rr["decade"], errors="coerce")
-            rr = rr.sort_values("decade")
+        sub["decade"] = pd.to_numeric(sub["decade"], errors="coerce")
+        sub = sub.sort_values("decade")
 
-        # draw outcome lines (one per outcome)
-        for og in OUTCOME_ORDER:
-            ss = sub[sub["outcome_group"] == og]
-            if ss.empty: 
-                continue
-            ax.plot(ss["decade"].to_numpy(), ss["rate"].to_numpy(), marker="o", label=og)
+        ax.plot(
+            sub["decade"].to_numpy(),
+            sub["death_rate"].to_numpy(),
+            marker="o",
+            label="Death rate"
+        )
 
-        # draw recruitment share line
-        if not rr.empty:
-            ax.plot(rr["decade"].to_numpy(), rr["recruitment_share"].to_numpy(),
-                    marker="s", linestyle="--", linewidth=2, label="Recruitment share")
+        ax.plot(
+            sub["decade"].to_numpy(),
+            sub["repatriated_rate"].to_numpy(),
+            marker="o",
+            label="Repatriated rate"
+        )
+
+        ax.plot(
+            sub["decade"].to_numpy(),
+            sub["death_repatriated_rate"].to_numpy(),
+            marker="o",
+            label="Death + repatriated rate"
+        )
+
+        ax.plot(
+            sub["decade"].to_numpy(),
+            sub["first_contract_share_within_decade"].to_numpy(),
+            marker="s",
+            linestyle="--",
+            linewidth=2,
+            label="First-contract share"
+        )
 
         ax.set_title(str(rank))
         ax.set_ylim(0.0, 1.0)
+
         if i % ncols == 0:
             ax.set_ylabel("Rate / Share")
+
         if i >= (nrows - 1) * ncols:
             ax.set_xlabel("Decade")
 
-        # pick legend entries once from first visible panel
         if global_handles is None:
             global_handles, global_labels = ax.get_legend_handles_labels()
 
-    # Hide any unused axes
-    for j in range(i+1, len(axes)):
+    # Hide unused axes
+    for j in range(i + 1, len(axes)):
         axes[j].set_visible(False)
 
-    fig.suptitle("Outcome rates and recruitment share by decade — small multiples by rank", y=0.995)
+    fig.suptitle(
+        "Revised outcome rates and first-contract share by decade and rank",
+        y=0.995
+    )
 
-    # one global legend outside on the right
     if global_handles:
-        leg = fig.legend(global_handles, global_labels, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
+        fig.legend(
+            global_handles,
+            global_labels,
+            loc="center left",
+            bbox_to_anchor=(1.02, 0.5),
+            frameon=False
+        )
         plt.subplots_adjust(right=0.80)
 
     plt.tight_layout()
-    out_path = os.path.join(FIGURES, "fig_outcome_trends_plus_recruitment_by_rank.png")
-    fig.savefig(out_path, dpi=180, bbox_inches="tight")
-    plt.close(fig)
-    print(f"[saved] {out_path}")
 
-    # Caption (dedup)
-    caps = os.path.join(DOCS, "figure_captions.txt")
-    append_caption_once(
-        caps,
-        "fig_outcome_trends_plus_recruitment_by_rank.png - Per-rank outcome rates (within rank & decade) with recruitment share (across ranks per decade)."
+    out_path = os.path.join(
+        FIGURES,
+        "fig_outcome_rates_and_first_contract_share_by_rank_revised.png"
     )
 
+    fig.savefig(out_path, dpi=180, bbox_inches="tight")
+    plt.close(fig)
 
-# -------------------- Figure captions (no duplicates) --------------------
-caps = os.path.join(DOCS, "figure_captions.txt")
-append_caption_once(caps, "fig_region_by_rank_parent.png - Share of origin regions within each parent rank category.")
-append_caption_once(caps, "fig_rank_parent_by_outcome.png - Distribution of parent rank categories across contract outcomes.")
-append_caption_once(caps, "fig_trend_over_time.png - Foreign share, attrition rate, death rate, and share of high-ranking positions by decade.")
-append_caption_once(caps, "fig_death_vs_recruitment.png - Comparison of death rate and inflow of new recruits (first-time entrants) by decade.")
-append_caption_once(caps, "fig_death_vs_recruitment_by_rank.png - Death rate vs recruitment share by parent rank (all decades).")
-for dec, sub in (contracts.dropna(subset=["decade"])
-                 .groupby("decade", sort=True)):
-    append_caption_once(caps, f"fig_death_vs_recruitment_by_rank_{dec}s.png - Death rate vs recruitment share by parent rank in the {dec}s.")
+    print(f"[saved] {out_path}")
 
-print(f"[saved] {caps}")
+
+# -------------------- Revised figure captions --------------------
+# I write these to a separate revised captions file so the old conference-version
+# captions can stay untouched for reference.
+
+revised_caps = os.path.join(DOCS, "figure_captions_revised.txt")
+
+caption_lines = [
+    "fig_region_by_rank_parent.png - Share of origin regions within each parent rank category.",
+    "fig_rank_parent_by_outcome_revised.png - Distribution of parent rank categories within revised outcome groups.",
+    "fig_trend_over_time_revised.png - Foreign share, death rate, repatriated rate, irregular exit rate, and high-rank share by decade.",
+    "fig_death_rate_and_first_contract_rate_by_decade.png - Death rate and first-contract rate by decade.",
+    "fig_first_contracts_vs_exits_by_rank_revised.png - First-contract share, death share, repatriated share, and death + repatriated share by parent rank across all decades.",
+    "fig_first_contracts_vs_exits_by_rank_1700s_revised.png - First-contract and major-exit shares by parent rank in the 1700s.",
+    "fig_first_contracts_vs_exits_by_rank_1710s_revised.png - First-contract and major-exit shares by parent rank in the 1710s.",
+    "fig_first_contracts_vs_exits_by_rank_1720s_revised.png - First-contract and major-exit shares by parent rank in the 1720s.",
+    "fig_first_contracts_vs_exits_by_rank_1730s_revised.png - First-contract and major-exit shares by parent rank in the 1730s.",
+    "fig_first_contracts_vs_exits_by_rank_1740s_revised.png - First-contract and major-exit shares by parent rank in the 1740s.",
+    "fig_first_contracts_vs_exits_by_rank_1750s_revised.png - First-contract and major-exit shares by parent rank in the 1750s.",
+    "fig_first_contracts_vs_exits_by_rank_1760s_revised.png - First-contract and major-exit shares by parent rank in the 1760s.",
+    "fig_first_contracts_vs_exits_by_rank_1770s_revised.png - First-contract and major-exit shares by parent rank in the 1770s.",
+    "fig_first_contracts_vs_exits_by_rank_1780s_revised.png - First-contract and major-exit shares by parent rank in the 1780s.",
+    "fig_outcome_rates_and_first_contract_share_by_rank_revised.png - Per-rank revised outcome rates within rank and decade, shown together with first-contract share across ranks within each decade."
+]
+
+with open(revised_caps, "w", encoding="utf-8") as f:
+    for line in caption_lines:
+        f.write(line + "\n")
+
+print(f"[saved] {revised_caps}")
 print("[done] Descriptives complete.")
-
