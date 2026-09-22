@@ -1,0 +1,29 @@
+QUESTION-SPECIFIC MODEL NOTES
+
+Estimand
+- Probability that a clearly recorded Death/Repatriated ending was Death.
+- Death is coded 1; Repatriated is coded 0.
+- Chamber, Unknown/unclear, Other, and Irregular exit are excluded.
+
+Specification
+- Binary logit with rank, linear decade, rank x decade, region, and high-rank status.
+- Reference rank: Sea. Reference region: Dutch Republic.
+- HC1 robust standard errors and 95% confidence intervals.
+- Sensitivity model includes only records with person_cluster_id.
+
+Primary model records: 555,294
+Identifiable-only records: 418,306
+Primary military-related coefficients estimated: 2
+
+Interpretation rules
+- Rank main effects compare ranks in 1700.
+- decade_since_1700 is the Sea-rank change in death odds per decade.
+- Rank x decade terms show how each rank's time trend differs from Sea.
+- Odds ratios above 1 indicate higher odds; below 1 indicate lower odds.
+- Predicted probabilities describe a Dutch, non-high-rank reference profile.
+
+Limits
+- The model tests associations in contract outcomes, not VOC collapse.
+- It does not model contract duration, exposure time, active workforce stock, or labor demand.
+- Repeated contracts may belong to the same person; HC1 errors do not solve within-person dependence.
+- A competing-risks survival model should be the next step when durations are validated.

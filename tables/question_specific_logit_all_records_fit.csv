@@ -1,0 +1,2 @@
+model,n_records,n_deaths,n_repatriated,death_share,aic,deviance,pseudo_r2_cs
+all_records,555294,351404,203890,0.6328251340731216,660672.9896271866,660624.9896271864,0.11766619619121643
