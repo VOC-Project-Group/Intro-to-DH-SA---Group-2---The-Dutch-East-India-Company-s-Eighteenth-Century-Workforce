@@ -1,522 +1,243 @@
 """
-03_models.py
+Question-specific models for the revised VOC article.
 
-Revised modelling script for the VOC project.
+Research question
+-----------------
+Among contracts with a clearly recorded Death or Repatriated ending, did the
+probability of Death differ by occupational rank, and did rank differences change
+over time?
 
-Purpose
-- Uses the cleaned dataset produced by 01_cleaning.py.
-- Predicts revised contract outcome groups using simple, interpretable features.
-- Saves model diagnostics, confusion matrices, feature importances, and notes.
-- Uses the revised outcome grouping instead of the previous broad outcome grouping.
+This script estimates one explicit historical contrast and reports odds ratios, confidence intervals, and predicted
+probabilities.
 
-Target
-- outcome_group_revised, with classes:
-  * Death
-  * Repatriated
-  * Chamber
-  * Unknown / unclear
-  * Other
-  * Irregular exit
+Primary model
+-------------
+Binary logit (binomial GLM): Death = 1, Repatriated = 0.
+Predictors: rank, decade (linear, centred at 1700), rank x decade, region, and the
+pre-existing high-rank indicator. Sea and Dutch Republic are reference categories.
+HC1 heteroskedasticity-robust standard errors are reported.
 
-Features
-- Categorical:
-  * region_label
-  * rank_parent
+Sensitivity model
+-----------------
+The same specification is fitted only to records with person_cluster_id. This
+checks sensitivity to the 26.6% of records for which first-contract/person-level
+linkage is unavailable. The model deliberately does not use first-contract status:
+missing identifiers would otherwise be encoded as non-first contracts.
 
-- Numeric:
-  * decade
-  * is_high_rank
-  * is_dutch
-  * is_first_contract_true
-
-Important notes
-- First contracts are treated as a proxy for new workforce entry, not as a direct hiring rate.
-- These models are diagnostic and descriptive. They should not be interpreted as causal models.
-- The models are mainly useful for checking whether broad structural variables can separate revised outcome groups.
-
-Outputs:
-model_class_distribution_revised.csv
-model_logit_classification_report_revised.csv
-model_logit_confusion_matrix_revised.csv
-fig_logit_confusion_matrix_revised.png
-model_rf_classification_report_revised.csv
-model_rf_confusion_matrix_revised.csv
-model_rf_feature_importances_revised.csv
-fig_rf_feature_importance_revised.png
-fig_rf_confusion_matrix_revised.png
-model_notes_revised.txt
+Interpretive limits
+-------------------
+This is an association model, not a causal or collapse-prediction model. Death and
+repatriation are competing recorded endings, but contract duration/exposure is not
+modelled here.
 """
 
-import os
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
 
 
-# ---------------- Settings ----------------
-TARGET_CLASSES = [
-    "Death",
-    "Repatriated",
-    "Chamber",
-    "Unknown / unclear",
-    "Other",
-    "Irregular exit",
-]
+SCRIPT_DIR = Path(__file__).resolve().parent
+BASE = SCRIPT_DIR.parent if SCRIPT_DIR.name == "notebooks" else SCRIPT_DIR
+DATA_CLEAN = BASE / "data_clean"
+TABLES = BASE / "tables"
+FIGURES = BASE / "figures"
+DOCS = BASE / "docs"
 
-DROP_UNKNOWN_UNCLEAR = False
+for folder in (TABLES, FIGURES, DOCS):
+    folder.mkdir(parents=True, exist_ok=True)
 
-
-# ---------------- Paths ----------------
-BASE = os.path.dirname(os.path.abspath(__file__))
-DATA_C = os.path.join(BASE, "data_clean")
-TABLES = os.path.join(BASE, "tables")
-FIGS = os.path.join(BASE, "figures")
-DOCS = os.path.join(BASE, "docs")
-
-for folder in [TABLES, FIGS, DOCS]:
-    os.makedirs(folder, exist_ok=True)
+RANK_ORDER = ["Sea", "Military", "Ship", "Other", "Medical", "Trade"]
+REFERENCE_REGION = "Dutch Republic"
 
 
-# ---------------- Helpers ----------------
-def save_csv(df, path):
+def save_csv(df, filename):
+    path = TABLES / filename
     df.to_csv(path, index=False)
     print(f"[saved] {path}")
 
 
-def append_caption_once(path, line):
-    existing = set()
+def prepare_data(contracts):
+    required = {
+        "outcome_group_revised", "rank_parent", "region_label",
+        "is_high_rank", "person_cluster_id"
+    }
+    missing = required - set(contracts.columns)
+    if missing:
+        raise RuntimeError(f"Missing required columns: {sorted(missing)}")
 
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            existing = {x.strip() for x in f.readlines()}
+    df = contracts[
+        contracts["outcome_group_revised"].isin(["Death", "Repatriated"])
+    ].copy()
+    df["death"] = (df["outcome_group_revised"] == "Death").astype(int)
 
-    if line.strip() not in existing:
-        with open(path, "a", encoding="utf-8") as f:
-            f.write(line.strip() + "\n")
+    if "decade" not in df.columns:
+        if "contract_start_year" not in df.columns:
+            raise RuntimeError("Need decade or contract_start_year.")
+        df["decade"] = (
+            pd.to_numeric(df["contract_start_year"], errors="coerce") // 10 * 10
+        )
+
+    df["decade"] = pd.to_numeric(df["decade"], errors="coerce")
+    df["decade_since_1700"] = (df["decade"] - 1700) / 10
+    df["rank_parent"] = df["rank_parent"].fillna("Unknown").astype(str)
+    df["region_label"] = df["region_label"].fillna("Unknown").astype(str)
+    df["is_high_rank"] = pd.to_numeric(df["is_high_rank"], errors="coerce")
+    df["has_person_cluster_id"] = df["person_cluster_id"].notna()
+
+    return df.dropna(
+        subset=["death", "decade", "decade_since_1700", "is_high_rank"]
+    )
 
 
-def make_one_hot_encoder():
-    """
-    Create a OneHotEncoder that works across different scikit-learn versions.
-    """
-    try:
-        return OneHotEncoder(handle_unknown="ignore", sparse_output=False)
-    except TypeError:
-        return OneHotEncoder(handle_unknown="ignore", sparse=False)
+def fit_model(df, model_name):
+    # Linear decade terms make each interaction directly interpretable as the
+    # change in a rank's death odds per decade. Descriptive plots should still be
+    # checked for non-linearity.
+    formula = (
+        "death ~ C(rank_parent, Treatment(reference='Sea')) * decade_since_1700 "
+        "+ C(region_label, Treatment(reference='Dutch Republic')) + is_high_rank"
+    )
+    fitted = smf.glm(
+        formula=formula,
+        data=df,
+        family=sm.families.Binomial(),
+    ).fit(cov_type="HC1")
+
+    ci = fitted.conf_int()
+    results = pd.DataFrame({
+        "term": fitted.params.index,
+        "log_odds": fitted.params.values,
+        "std_error_robust": fitted.bse.values,
+        "odds_ratio": np.exp(fitted.params.values),
+        "ci_low_95": np.exp(ci[0].values),
+        "ci_high_95": np.exp(ci[1].values),
+        "p_value": fitted.pvalues.values,
+        "model": model_name,
+    })
+    results["n_records"] = int(fitted.nobs)
+    save_csv(results, f"question_specific_logit_{model_name}_odds_ratios.csv")
+
+    fit = pd.DataFrame([{
+        "model": model_name,
+        "n_records": int(fitted.nobs),
+        "n_deaths": int(df["death"].sum()),
+        "n_repatriated": int((1 - df["death"]).sum()),
+        "death_share": float(df["death"].mean()),
+        "aic": float(fitted.aic),
+        "deviance": float(fitted.deviance),
+        "pseudo_r2_cs": float(fitted.pseudo_rsquared(kind="cs")),
+    }])
+    save_csv(fit, f"question_specific_logit_{model_name}_fit.csv")
+    return fitted
 
 
-def plot_confusion_matrix(cm, labels, title, output_path):
-    fig_size = max(6, len(labels) * 1.2)
-    fig, ax = plt.subplots(figsize=(fig_size, fig_size))
+def prediction_grid(fitted, observed_ranks, model_name):
+    ranks = [r for r in RANK_ORDER if r in observed_ranks]
+    if "Unknown" in observed_ranks:
+        ranks.append("Unknown")
+    grid = pd.MultiIndex.from_product(
+        [ranks, range(1700, 1790, 10)], names=["rank_parent", "decade"]
+    ).to_frame(index=False)
+    grid["decade_since_1700"] = (grid["decade"] - 1700) / 10
+    grid["region_label"] = REFERENCE_REGION
+    # This reference-profile prediction isolates rank/time coefficients. It is not
+    # a population-standardised estimate.
+    grid["is_high_rank"] = 0.0
 
-    im = ax.imshow(cm)
+    pred = fitted.get_prediction(grid).summary_frame(alpha=0.05)
+    grid["predicted_death_probability"] = pred["mean"].values
+    grid["ci_low_95"] = pred["mean_ci_lower"].values
+    grid["ci_high_95"] = pred["mean_ci_upper"].values
+    grid["model"] = model_name
+    grid["prediction_profile"] = "Dutch Republic; is_high_rank=0"
+    save_csv(grid, f"question_specific_logit_{model_name}_predicted_probabilities.csv")
+    return grid
 
-    ax.set_xticks(np.arange(len(labels)))
-    ax.set_yticks(np.arange(len(labels)))
-    ax.set_xticklabels(labels, rotation=45, ha="right")
-    ax.set_yticklabels(labels)
 
-    ax.set_xlabel("Predicted")
-    ax.set_ylabel("Actual")
-    ax.set_title(title)
-
-    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
-            ax.text(j, i, str(cm[i, j]), ha="center", va="center", fontsize=8)
-
+def plot_predictions(grid):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for rank, part in grid.groupby("rank_parent", sort=False):
+        part = part.sort_values("decade")
+        #ax.plot(part["decade"], part["predicted_death_probability"], marker="o", label=rank)
+        ax.plot(
+            part["decade"].to_numpy(),
+            part["predicted_death_probability"].to_numpy(),
+            marker="o",
+            label=rank
+        )
+        ax.fill_between(part["decade"], part["ci_low_95"], part["ci_high_95"], alpha=0.10)
+    ax.set(
+        xlabel="Contract-start decade",
+        ylabel="Predicted probability of Death\n(among Death or Repatriated endings)",
+        title="Rank-specific death probabilities from the interpretable logit model",
+        ylim=(0, 1),
+    )
+    ax.legend(title="Rank", bbox_to_anchor=(1.02, 0.5), loc="center left", frameon=False)
     fig.tight_layout()
-    fig.savefig(output_path, dpi=180, bbox_inches="tight")
+    path = FIGURES / "fig_question_specific_rank_death_probabilities.png"
+    fig.savefig(path, dpi=180, bbox_inches="tight")
     plt.close(fig)
-
-    print(f"[saved] {output_path}")
-
-
-def get_feature_names(preprocessor, cat_cols, num_cols):
-    names = []
-
-    if cat_cols:
-        encoder = preprocessor.named_transformers_["cat"]
-        names.extend(encoder.get_feature_names_out(cat_cols).tolist())
-
-    names.extend(num_cols)
-
-    return names
+    print(f"[saved] {path}")
 
 
-# ---------------- Load ----------------
-csv_path = os.path.join(DATA_C, "contracts_clean.csv")
-
-if not os.path.exists(csv_path):
-    raise FileNotFoundError(f"Missing {csv_path}. Run 01_cleaning.py first.")
-
-contracts = pd.read_csv(csv_path, low_memory=False)
-
-# Create decade if it was not saved by the cleaning script.
-if "decade" not in contracts.columns:
-    if "contract_start_year" in contracts.columns:
-        contracts["decade"] = (
-            pd.to_numeric(contracts["contract_start_year"], errors="coerce") // 10 * 10
-        )
-        print("[info] Created decade from contract_start_year.")
-    elif "date_begin_contract" in contracts.columns:
-        contracts["date_begin_contract"] = pd.to_datetime(
-            contracts["date_begin_contract"],
-            errors="coerce"
-        )
-        contracts["decade"] = contracts["date_begin_contract"].dt.year // 10 * 10
-        print("[info] Created decade from date_begin_contract.")
-    else:
-        print("[warn] No decade, contract_start_year, or date_begin_contract column found.")
-
-# ---------------- Build modelling set ----------------
-if "outcome_group_revised" in contracts.columns:
-    OUTCOME_COL = "outcome_group_revised"
-elif "outcome_group" in contracts.columns:
-    OUTCOME_COL = "outcome_group"
-else:
-    raise RuntimeError("contracts_clean.csv lacks an outcome grouping column.")
-
-if "is_first_contract_true" in contracts.columns:
-    FIRST_CONTRACT_COL = "is_first_contract_true"
-elif "is_first_contract" in contracts.columns:
-    FIRST_CONTRACT_COL = "is_first_contract"
-else:
-    raise RuntimeError("contracts_clean.csv lacks a first-contract column.")
-
-print(f"[info] Using outcome column: {OUTCOME_COL}")
-print(f"[info] Using first-contract column: {FIRST_CONTRACT_COL}")
-
-df = contracts.copy()
-
-df["model_outcome"] = df[OUTCOME_COL].astype(str)
-df["first_contract_for_model"] = pd.to_numeric(
-    df[FIRST_CONTRACT_COL],
-    errors="coerce"
-).fillna(0).astype(int)
-
-valid_targets = TARGET_CLASSES.copy()
-
-if DROP_UNKNOWN_UNCLEAR:
-    valid_targets = [x for x in valid_targets if x != "Unknown / unclear"]
-
-df = df[df["model_outcome"].isin(valid_targets)].copy()
-
-feat_cols_cat = [c for c in ["region_label", "rank_parent"] if c in df.columns]
-feat_cols_num = [
-    c for c in [
-        "decade",
-        "is_high_rank",
-        "is_dutch",
-        "first_contract_for_model",
+def write_notes(primary, sensitivity, primary_grid):
+    path = DOCS / "question_specific_model_notes.txt"
+    military_terms = primary.params[
+        primary.params.index.str.contains("Military", regex=False)
     ]
-    if c in df.columns
-]
-
-if not feat_cols_cat and not feat_cols_num:
-    raise RuntimeError("No usable feature columns found.")
-
-# Categorical features get an explicit missing label.
-for c in feat_cols_cat:
-    df[c] = df[c].fillna("Unknown").astype(str)
-
-# Numeric features get median imputation.
-for c in feat_cols_num:
-    df[c] = pd.to_numeric(df[c], errors="coerce")
-
-    if df[c].isna().all():
-        df[c] = df[c].fillna(0)
-    else:
-        df[c] = df[c].fillna(df[c].median())
-
-df = df.dropna(subset=["model_outcome"])
-df = df.dropna(subset=feat_cols_cat + feat_cols_num)
-
-if df.empty:
-    raise RuntimeError(
-        "0 rows for modelling after preprocessing. "
-        "Check that revised outcomes and feature columns exist."
-    )
-
-X = df[feat_cols_cat + feat_cols_num].copy()
-y = df["model_outcome"].copy()
-
-class_distribution = (
-    y.value_counts()
-    .rename_axis("outcome_group_revised")
-    .reset_index(name="n")
-)
-
-class_distribution["share_pct"] = (
-    class_distribution["n"] / class_distribution["n"].sum() * 100
-).round(2)
-
-save_csv(
-    class_distribution,
-    os.path.join(TABLES, "model_class_distribution_revised.csv")
-)
-
-
-# ---------------- Train/test split ----------------
-class_counts = y.value_counts()
-do_stratify = y.nunique() > 1 and class_counts.min() >= 2
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.25,
-    random_state=42,
-    stratify=y if do_stratify else None
-)
-
-
-# ---------------- Preprocess ----------------
-prep = ColumnTransformer(
-    transformers=[
-        ("cat", make_one_hot_encoder(), feat_cols_cat) if feat_cols_cat else ("cat", "drop", []),
-        ("num", "passthrough", feat_cols_num) if feat_cols_num else ("num", "drop", []),
-    ]
-)
-
-
-# ---------------- Logistic Regression ----------------
-logit = LogisticRegression(
-    class_weight="balanced",
-    max_iter=1000,
-)
-
-logit_pipe = Pipeline(steps=[("prep", prep), ("clf", logit)])
-logit_pipe.fit(X_train, y_train)
-
-y_pred_logit = logit_pipe.predict(X_test)
-acc_logit = accuracy_score(y_test, y_pred_logit)
-
-report_logit = classification_report(
-    y_test,
-    y_pred_logit,
-    digits=3,
-    zero_division=0,
-)
-
-report_logit_df = pd.DataFrame(
-    classification_report(
-        y_test,
-        y_pred_logit,
-        digits=3,
-        zero_division=0,
-        output_dict=True,
-    )
-).transpose().reset_index().rename(columns={"index": "class_or_average"})
-
-save_csv(
-    report_logit_df,
-    os.path.join(TABLES, "model_logit_classification_report_revised.csv")
-)
-
-print("[logit] y_test dist:", dict(y_test.value_counts(normalize=True).round(3)))
-print("[logit] y_pred dist:", dict(pd.Series(y_pred_logit).value_counts(normalize=True).round(3)))
-
-cm_logit = confusion_matrix(y_test, y_pred_logit, labels=logit_pipe.classes_)
-
-cm_logit_df = pd.DataFrame(
-    cm_logit,
-    index=[f"actual_{x}" for x in logit_pipe.classes_],
-    columns=[f"predicted_{x}" for x in logit_pipe.classes_],
-)
-
-save_csv(
-    cm_logit_df.reset_index().rename(columns={"index": "actual"}),
-    os.path.join(TABLES, "model_logit_confusion_matrix_revised.csv")
-)
-
-cm_logit_path = os.path.join(FIGS, "fig_logit_confusion_matrix_revised.png")
-
-plot_confusion_matrix(
-    cm_logit,
-    logit_pipe.classes_,
-    "Logistic Regression: revised outcome confusion matrix",
-    cm_logit_path,
-)
-
-
-# ---------------- Random Forest ----------------
-rf = RandomForestClassifier(
-    n_estimators=500,
-    max_depth=None,
-    min_samples_leaf=20,
-    random_state=42,
-    n_jobs=-1,
-    class_weight="balanced_subsample",
-)
-
-rf_pipe = Pipeline(steps=[("prep", prep), ("rf", rf)])
-rf_pipe.fit(X_train, y_train)
-
-y_pred_rf = rf_pipe.predict(X_test)
-acc_rf = accuracy_score(y_test, y_pred_rf)
-
-report_rf = classification_report(
-    y_test,
-    y_pred_rf,
-    digits=3,
-    zero_division=0,
-)
-
-report_rf_df = pd.DataFrame(
-    classification_report(
-        y_test,
-        y_pred_rf,
-        digits=3,
-        zero_division=0,
-        output_dict=True,
-    )
-).transpose().reset_index().rename(columns={"index": "class_or_average"})
-
-save_csv(
-    report_rf_df,
-    os.path.join(TABLES, "model_rf_classification_report_revised.csv")
-)
-
-cm_rf = confusion_matrix(y_test, y_pred_rf, labels=rf_pipe.classes_)
-
-cm_rf_df = pd.DataFrame(
-    cm_rf,
-    index=[f"actual_{x}" for x in rf_pipe.classes_],
-    columns=[f"predicted_{x}" for x in rf_pipe.classes_],
-)
-
-save_csv(
-    cm_rf_df.reset_index().rename(columns={"index": "actual"}),
-    os.path.join(TABLES, "model_rf_confusion_matrix_revised.csv")
-)
-
-print("[rf] y_test dist:", dict(y_test.value_counts(normalize=True).round(3)))
-print("[rf] y_pred dist:", dict(pd.Series(y_pred_rf).value_counts(normalize=True).round(3)))
-
-
-# ---------------- Random Forest feature importances ----------------
-feature_names = get_feature_names(
-    rf_pipe.named_steps["prep"],
-    feat_cols_cat,
-    feat_cols_num,
-)
-
-importances = rf_pipe.named_steps["rf"].feature_importances_
-
-fi = (
-    pd.DataFrame(
-        {
-            "feature": feature_names,
-            "importance": importances,
-        }
-    )
-    .sort_values("importance", ascending=False)
-    .reset_index(drop=True)
-)
-
-save_csv(
-    fi,
-    os.path.join(TABLES, "model_rf_feature_importances_revised.csv")
-)
-
-top = fi.head(20).copy()
-
-fig, ax = plt.subplots(figsize=(9, 7))
-ax.barh(top["feature"].iloc[::-1], top["importance"].iloc[::-1])
-ax.set_xlabel("Importance")
-ax.set_title("Random Forest: top feature importances")
-fig.tight_layout()
-
-fi_path = os.path.join(FIGS, "fig_rf_feature_importance_revised.png")
-fig.savefig(fi_path, dpi=180, bbox_inches="tight")
-plt.close(fig)
-
-print(f"[saved] {fi_path}")
-
-
-# ---------------- Random Forest confusion matrix ----------------
-cm_rf_path = os.path.join(FIGS, "fig_rf_confusion_matrix_revised.png")
-
-plot_confusion_matrix(
-    cm_rf,
-    rf_pipe.classes_,
-    "Random Forest: revised outcome confusion matrix",
-    cm_rf_path,
-)
-
-
-# ---------------- Notes ----------------
-notes_path = os.path.join(DOCS, "model_notes_revised.txt")
-
-with open(notes_path, "w", encoding="utf-8") as f:
-    f.write("MODEL NOTES - Revised outcome prediction\n\n")
-
-    f.write("Target column used:\n")
-    f.write(f"- {OUTCOME_COL}\n\n")
-
-    f.write("Target classes included:\n")
-    for cls in valid_targets:
-        f.write(f"- {cls}\n")
-    f.write("\n")
-
-    f.write("Feature columns used:\n")
-    for col in feat_cols_cat + feat_cols_num:
-        f.write(f"- {col}\n")
-    f.write("\n")
-
-    f.write(f"Rows used for modelling: {len(df):,}\n")
-    f.write(f"Train size: {len(X_train):,}\n")
-    f.write(f"Test size: {len(X_test):,}\n\n")
-
-    f.write("Class distribution:\n")
-    f.write(class_distribution.to_string(index=False))
-    f.write("\n\n")
-
-    f.write(f"Logistic Regression accuracy: {acc_logit:.3f}\n")
-    f.write(report_logit)
-    f.write("\n\n")
-
-    f.write(f"Random Forest accuracy: {acc_rf:.3f}\n")
-    f.write(report_rf)
-    f.write("\n\n")
-
-    f.write("Interpretation note:\n")
-    f.write(
-        "These models are diagnostic and descriptive. They do not show causality. "
-        "They help check whether broad structural variables such as rank, region, decade, "
-        "Dutch/non-Dutch status, high-rank status, and first-contract status can separate "
-        "the revised outcome groups.\n"
-    )
-
-print(f"[saved] {notes_path}")
-
-
-# ---------------- Revised figure captions ----------------
-caps_path = os.path.join(DOCS, "figure_captions_revised.txt")
-
-append_caption_once(
-    caps_path,
-    "fig_logit_confusion_matrix_revised.png - Logistic Regression confusion matrix for revised outcome prediction."
-)
-
-append_caption_once(
-    caps_path,
-    "fig_rf_feature_importance_revised.png - Random Forest top feature importances for revised outcome prediction."
-)
-
-append_caption_once(
-    caps_path,
-    "fig_rf_confusion_matrix_revised.png - Random Forest confusion matrix for revised outcome prediction."
-)
-
-print(f"[updated] {caps_path}")
-print("[done] Revised modelling complete.")
+    with path.open("w", encoding="utf-8") as f:
+        f.write("QUESTION-SPECIFIC MODEL NOTES\n\n")
+        f.write("Estimand\n")
+        f.write("- Probability that a clearly recorded Death/Repatriated ending was Death.\n")
+        f.write("- Death is coded 1; Repatriated is coded 0.\n")
+        f.write("- Chamber, Unknown/unclear, Other, and Irregular exit are excluded.\n\n")
+        f.write("Specification\n")
+        f.write("- Binary logit with rank, linear decade, rank x decade, region, and high-rank status.\n")
+        f.write("- Reference rank: Sea. Reference region: Dutch Republic.\n")
+        f.write("- HC1 robust standard errors and 95% confidence intervals.\n")
+        f.write("- Sensitivity model includes only records with person_cluster_id.\n\n")
+        f.write(f"Primary model records: {int(primary.nobs):,}\n")
+        f.write(f"Identifiable-only records: {int(sensitivity.nobs):,}\n")
+        f.write(f"Primary military-related coefficients estimated: {len(military_terms)}\n\n")
+        f.write("Interpretation rules\n")
+        f.write("- Rank main effects compare ranks in 1700.\n")
+        f.write("- decade_since_1700 is the Sea-rank change in death odds per decade.\n")
+        f.write("- Rank x decade terms show how each rank's time trend differs from Sea.\n")
+        f.write("- Odds ratios above 1 indicate higher odds; below 1 indicate lower odds.\n")
+        f.write("- Predicted probabilities describe a Dutch, non-high-rank reference profile.\n\n")
+        f.write("Limits\n")
+        f.write("- The model tests associations in contract outcomes, not VOC collapse.\n")
+        f.write("- It does not model contract duration, exposure time, active workforce stock, or labor demand.\n")
+        f.write("- Repeated contracts may belong to the same person; HC1 errors do not solve within-person dependence.\n")
+        f.write("- A competing-risks survival model should be the next step when durations are validated.\n")
+    print(f"[saved] {path}")
+
+
+def main():
+    input_path = DATA_CLEAN / "contracts_clean.csv"
+    if not input_path.exists():
+        raise FileNotFoundError(
+            f"Missing {input_path}. Run 01_cleaning.py first. "
+            "The repository does not distribute the cleaned data."
+        )
+    contracts = pd.read_csv(input_path, low_memory=False)
+    df = prepare_data(contracts)
+
+    primary = fit_model(df, "all_records")
+    primary_grid = prediction_grid(primary, set(df["rank_parent"]), "all_records")
+
+    identifiable = df[df["has_person_cluster_id"]].copy()
+    sensitivity = fit_model(identifiable, "identifiable_only")
+    prediction_grid(sensitivity, set(identifiable["rank_parent"]), "identifiable_only")
+
+    plot_predictions(primary_grid)
+    write_notes(primary, sensitivity, primary_grid)
+    print("[done] Question-specific models complete.")
+
+
+if __name__ == "__main__":
+    main()
