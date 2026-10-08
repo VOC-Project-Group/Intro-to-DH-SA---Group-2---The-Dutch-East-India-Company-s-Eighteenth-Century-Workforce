@@ -1254,3 +1254,27 @@ The README files now explain that:
 - earlier six-category models are kept as supplementary diagnostics only
 
 This keeps the repository documentation aligned with the revised article direction after Lorella’s feedback.
+
+## Step 48: I created the shared article draft document
+
+After updating the repository documentation, I created a shared article draft document for the next stage of the project.
+
+Lorella suggested that the article should start from a new structure based on the revised research question and central argument, rather than simply expanding the DHBenelux submission.
+
+The shared article document is organized around the revised research question:
+
+“Did occupationally unequal mortality and turnover create persistent workforce vulnerabilities that may have constrained the VOC’s capacity to respond to late-eighteenth-century pressures?”
+
+The document structure includes:
+
+- Introduction
+- Historical and scholarly background
+- Data and methodology
+- Occupational structure of the VOC workforce
+- Mortality and repatriation by rank
+- Persistent workforce vulnerabilities across decades
+- Question-specific logistic model
+- Discussion
+- Conclusion
+
+The purpose of this document is to create a shared writing space for the article draft and to separate the article structure from the older DHBenelux poster/submission structure.
