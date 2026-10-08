@@ -19,3 +19,12 @@ fig_rf_confusion_matrix_revised.png - Random Forest confusion matrix for revised
 fig_logit_confusion_matrix_sensitivity_no_first_contract.png - Logistic Regression sensitivity confusion matrix without first-contract status.
 fig_rf_feature_importance_sensitivity_no_first_contract.png - Random Forest sensitivity feature importances without first-contract status.
 fig_rf_confusion_matrix_sensitivity_no_first_contract.png - Random Forest sensitivity confusion matrix without first-contract status.
+
+
+fig_question_specific_rank_death_probabilities.png
+
+This figure shows predicted probabilities from the question-specific binary logistic model. The model includes only contracts ending in Death or Repatriated, with Death coded as 1 and Repatriated coded as 0. Predicted probabilities are shown by rank and decade for a Dutch, non-high-rank reference profile.
+
+The figure supports the revised article argument that mortality was occupationally unequal. Military ranks show consistently higher predicted probabilities of Death than Sea ranks, and this difference increases over the eighteenth century. This makes the figure useful as article evidence for disproportionate military mortality and persistent workforce vulnerability.
+
+The figure should not be interpreted as showing that workforce vulnerability directly caused the VOC’s collapse. It is an associational model of Death versus Repatriated outcomes.
