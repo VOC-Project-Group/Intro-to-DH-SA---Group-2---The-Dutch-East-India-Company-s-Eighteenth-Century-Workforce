@@ -1233,3 +1233,24 @@ For the current article direction, the relevant model outputs are now:
 - `tables/question_specific_logit_identifiable_only_predicted_probabilities.csv`
 
 This keeps the older modelling work available for transparency, while making clear that the article’s active evidence comes from the question-specific Death versus Repatriated model.
+
+## Step 47: I updated the README files for the new active model
+
+After updating the model documentation, I also updated the repository README files.
+
+The purpose was to make sure the repository overview matches the current article workflow.
+
+The main change is that `03_models.py` is no longer described as the earlier six-category Logistic Regression and Random Forest script.
+
+It is now described as the active question-specific binary logistic model comparing Death and Repatriated outcomes.
+
+The README files now explain that:
+
+- Death is coded as 1
+- Repatriated is coded as 0
+- the model estimates whether a clearly recorded Death/Repatriated ending was Death rather than Repatriated
+- the model includes rank, decade, rank x decade interaction, region, and high-rank status
+- the model is run on all records and on identifiable records only
+- earlier six-category models are kept as supplementary diagnostics only
+
+This keeps the repository documentation aligned with the revised article direction after Lorella’s feedback.
