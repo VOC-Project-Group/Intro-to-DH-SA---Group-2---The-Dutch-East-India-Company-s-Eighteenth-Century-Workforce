@@ -1,3 +1,18 @@
+﻿NOTE ON CURRENT STATUS
+
+This model comparison summary belongs to the earlier revised six-category modelling stage. It compares models that predicted all revised outcome groups.
+
+After Lorella’s review, these models are now treated as supplementary diagnostics only. The active article model is the question-specific binary logistic model in 03_models.py, which compares Death and Repatriated outcomes.
+
+For the current article direction, use:
+
+docs/question_specific_model_notes.txt
+tables/question_specific_logit_all_records_odds_ratios.csv
+tables/question_specific_logit_identifiable_only_odds_ratios.csv
+tables/question_specific_logit_all_records_predicted_probabilities.csv
+tables/question_specific_logit_identifiable_only_predicted_probabilities.csv
+
+The earlier six-category model comparison should not be used as central article evidence.
 MODEL COMPARISON SUMMARY - Revised VOC outcome prediction
 
 This table compares the main revised models with the sensitivity models that exclude first-contract status.
@@ -10,3 +25,4 @@ Logistic Regression without first-contract status     0.283            0.201    
 
 Interpretation:
 The models have modest predictive performance overall. The Random Forest models perform slightly better than Logistic Regression, but neither model separates all revised outcome groups strongly. The sensitivity model without first-contract status performs similarly to the main model. This suggests that the modelling results are not driven only by the first-contract variable. However, the results should remain diagnostic and supplementary rather than central evidence.
+

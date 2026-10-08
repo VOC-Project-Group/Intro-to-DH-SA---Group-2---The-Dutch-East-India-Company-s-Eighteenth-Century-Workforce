@@ -1,3 +1,16 @@
+﻿NOTE ON CURRENT STATUS
+
+This file documents the earlier revised six-category modelling stage.
+
+These models are now treated as supplementary diagnostics only. They predicted individual contract-ending labels across the revised outcome groups, but they do not directly answer the current article question about occupationally unequal mortality and workforce vulnerability.
+
+After Lorella’s review, the active article model was changed to a question-specific binary logistic model comparing Death and Repatriated outcomes.
+
+The active model notes are now in:
+
+docs/question_specific_model_notes.txt
+
+The earlier Random Forest and six-category Logistic Regression models should not be used as central article evidence.
 MODEL NOTES - Revised outcome prediction
 
 Target column used:
@@ -64,3 +77,4 @@ Unknown / unclear      0.285     0.209     0.241     10421
 
 Interpretation note:
 These models are diagnostic and descriptive. They do not show causality. They help check whether broad structural variables such as rank, region, decade, Dutch/non-Dutch status, high-rank status, and first-contract status can separate the revised outcome groups.
+
