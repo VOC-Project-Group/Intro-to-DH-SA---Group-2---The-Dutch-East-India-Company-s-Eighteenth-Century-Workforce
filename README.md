@@ -132,20 +132,24 @@ The script also generates decade-specific first-contract versus exit figures and
 
 #### `03_models.py`
 
-Runs revised diagnostic models using the revised outcome grouping and first-contract status.
+Runs the active question-specific binary logistic model.
+
+The model includes only contracts ending in either Death or Repatriated. Death is coded as 1 and Repatriated is coded as 0. The model estimates whether a clearly recorded Death/Repatriated ending was Death rather than Repatriated.
+
+The model includes rank, decade, rank x decade interaction, region, and high-rank status. It is run both on all records and on identifiable records only.
+
+The identifiable-only model is used as a sensitivity check to test whether the main rank pattern remains similar when records without a valid `person_cluster_id` are excluded.
 
 Main outputs:
 
-- `tables/model_class_distribution_revised.csv`
-- `tables/model_logit_classification_report_revised.csv`
-- `tables/model_logit_confusion_matrix_revised.csv`
-- `tables/model_rf_classification_report_revised.csv`
-- `tables/model_rf_confusion_matrix_revised.csv`
-- `tables/model_rf_feature_importances_revised.csv`
-- `figures/fig_logit_confusion_matrix_revised.png`
-- `figures/fig_rf_confusion_matrix_revised.png`
-- `figures/fig_rf_feature_importance_revised.png`
-- `docs/model_notes_revised.txt`
+- `tables/question_specific_logit_all_records_odds_ratios.csv`
+- `tables/question_specific_logit_all_records_fit.csv`
+- `tables/question_specific_logit_all_records_predicted_probabilities.csv`
+- `tables/question_specific_logit_identifiable_only_odds_ratios.csv`
+- `tables/question_specific_logit_identifiable_only_fit.csv`
+- `tables/question_specific_logit_identifiable_only_predicted_probabilities.csv`
+- `figures/fig_question_specific_rank_death_probabilities.png`
+- `docs/question_specific_model_notes.txt`
 
 #### `13_revised_outcome_first_contract_benchmark.py`
 
