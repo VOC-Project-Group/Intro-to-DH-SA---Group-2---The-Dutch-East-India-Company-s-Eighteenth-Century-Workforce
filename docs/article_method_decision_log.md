@@ -918,3 +918,318 @@ This file summarizes the revised analysis in one readable document. It includes:
 The purpose is to make it easier for Lorella to review the current state of the analysis without needing to inspect every CSV and figure separately.
 
 I also cleaned the file encoding so that quotation marks and apostrophes display correctly.
+
+## Step 34: Lorella reviewed the revised analysis and suggested a new article framing
+
+After I sent the revised documentation, scripts, tables, and model outputs to Lorella, she reviewed the material and suggested that the article’s central question should be adjusted.
+
+The earlier framing was too close to the idea that workforce imbalance predicted or explained the VOC’s collapse. Lorella pointed out that the dataset does not contain an independent measure of institutional performance, such as annual profits, debt, cargo value, trade volume, or military performance.
+
+Because of this, the analysis should not claim that workforce imbalance predicted the company’s fall.
+
+The more defensible article direction is to focus on persistent and occupationally differentiated workforce vulnerabilities.
+
+The revised research question suggested by Lorella is:
+
+“Did occupationally unequal mortality and turnover create persistent workforce vulnerabilities that may have constrained the VOC’s capacity to respond to late-eighteenth-century pressures?”
+
+This allows the article to discuss VOC decline historically without claiming that the dataset directly predicts collapse.
+
+I decided to use this revised framing as the basis for the next article version.
+
+## Step 35: I adjusted the interpretation away from replacement failure
+
+Lorella also clarified that I should avoid claiming that the analysis has already demonstrated insufficient military recruitment or replacement failure.
+
+The reason is that first contracts and deaths are not directly equivalent flows.
+
+A person can only have one identifiable first contract, while death can occur after a first contract or after later contracts. In addition, missing `person_cluster_id` values are more common in Military records.
+
+Therefore, first-contract shares can be used as a useful comparison, but they should not be interpreted as a direct replacement measure.
+
+The revised interpretation should focus on:
+
+- disproportionate military mortality
+- occupationally unequal workforce vulnerability
+- different rank-specific patterns of death and repatriation
+- possible institutional vulnerability
+
+The wording should avoid:
+
+- “replacement failure”
+- “insufficient military recruitment”
+- “the VOC did not recruit enough military workers”
+- “the dataset predicts VOC collapse”
+
+This makes the article argument more careful and methodologically defensible.
+
+## Step 36: I separated Death and Repatriated more clearly in the article interpretation
+
+Lorella confirmed that Death and Repatriated should be discussed separately.
+
+They represent different workforce processes and have almost opposite rank distributions.
+
+The revised interpretation is:
+
+- Military ranks carry a disproportionate mortality burden.
+- Sea ranks are much more strongly associated with Repatriated outcomes.
+- Medical ranks are also relevant for repatriation.
+- Death and Repatriated should not be treated as equivalent forms of loss.
+
+The combined Death + Repatriated comparison should remain a supporting comparison only.
+
+This combined category is still useful because it shows that the interpretation changes when different exit types are combined. When Death and Repatriated are combined, the apparent mismatch largely disappears for Sea and Military ranks.
+
+This supports the argument that the type of exit matters. Mortality and repatriation should be interpreted as distinct systems of labor risk and return.
+
+## Step 37: I marked the earlier Random Forest and six-category models as supplementary
+
+Lorella advised that the earlier Random Forest and six-category outcome models should not become central article evidence.
+
+These models predicted individual contract-ending labels across the revised outcome groups. However, they do not directly answer the new article question about occupationally unequal mortality and workforce vulnerability.
+
+The limitations are:
+
+- the models predict contract-ending labels rather than workforce vulnerability
+- model performance is weak
+- the random record-level split may place different contracts belonging to the same person in both training and test sets
+- decade dominates the feature importance, but this may reflect temporal changes in recordkeeping or outcome frequencies
+- Random Forest feature importance is difficult to translate into a clear historical argument
+
+Because of this, I decided to keep the earlier Random Forest and six-category models as supplementary diagnostics only.
+
+They should not drive the article’s central argument.
+
+## Step 38: Lorella prepared a question-specific binary logistic model
+
+Lorella prepared an alternative version of `03_models.py`.
+
+This new script replaces the earlier six-category prediction task with a question-specific binary logistic model.
+
+Instead of predicting all revised outcome groups, the new model only includes contracts ending in either:
+
+- Death
+- Repatriated
+
+The model codes:
+
+- Death = 1
+- Repatriated = 0
+
+This means the model estimates whether a clearly recorded Death/Repatriated ending was more likely to be Death rather than Repatriated.
+
+This model is more directly connected to the revised article question because it focuses on occupationally unequal mortality instead of general outcome prediction.
+
+The model includes:
+
+- rank
+- decade
+- rank x decade interaction
+- region
+- high-rank status
+
+The reference categories are:
+
+- Sea for rank
+- Dutch Republic for region
+
+Lorella also included two versions of the model:
+
+1. An all-records model.
+2. An identifiable-only sensitivity model using only records with a valid `person_cluster_id`.
+
+The identifiable-only model is not a separate research question. It is a sensitivity check to see whether the main rank pattern remains similar when records without reliable person linkage are excluded.
+
+## Step 39: I ran the new question-specific `03_models.py`
+
+I ran Lorella’s new `03_models.py` script successfully.
+
+The script saved the following outputs:
+
+- `tables/question_specific_logit_all_records_odds_ratios.csv`
+- `tables/question_specific_logit_all_records_fit.csv`
+- `tables/question_specific_logit_all_records_predicted_probabilities.csv`
+- `tables/question_specific_logit_identifiable_only_odds_ratios.csv`
+- `tables/question_specific_logit_identifiable_only_fit.csv`
+- `tables/question_specific_logit_identifiable_only_predicted_probabilities.csv`
+- `figures/fig_question_specific_rank_death_probabilities.png`
+- `docs/question_specific_model_notes.txt`
+
+The first run produced the CSV outputs but stopped during plotting because of a pandas/matplotlib compatibility issue.
+
+The error came from this plotting line:
+
+`ax.plot(part["decade"], part["predicted_death_probability"], marker="o", label=rank)`
+
+I fixed it by converting the plotted Series to NumPy arrays:
+
+`ax.plot(part["decade"].to_numpy(), part["predicted_death_probability"].to_numpy(), marker="o", label=rank)`
+
+After this fix, the script ran successfully and saved the figure and model notes.
+
+## Step 40: I pushed the question-specific model outputs to GitHub
+
+After running the new model, I copied the updated files into the actual GitHub repository folder.
+
+The actual Git repository was not the same as my local working folder. My analysis folder was:
+
+`D:\Study\VU Amsterdam\Intro to Digital Humanities and Social Analytics\VOC_Dataset`
+
+The actual GitHub repository folder was:
+
+`D:\Study\VU Amsterdam\Intro to Digital Humanities and Social Analytics\Intro-to-DH-SA---Group-2---The-Dutch-East-India-Company-s-Eighteenth-Century-Workforce`
+
+I copied the updated `03_models.py`, the new question-specific model tables, the new figure, and the new model notes into the GitHub repository folder.
+
+I then committed the files with the message:
+
+`Add question-specific logistic model results`
+
+The first push was rejected because the remote repository had newer changes. I fixed this by running:
+
+`git pull --rebase origin main`
+
+The rebase completed successfully, and I then pushed the new commit to GitHub.
+
+The repository was clean after pushing.
+
+## Step 41: I interpreted the question-specific model results
+
+The new model supports the revised article framing.
+
+The model compares Death and Repatriated endings only. It estimates whether a Death/Repatriated contract ending was more likely to be Death.
+
+The main result is that Military ranks had substantially higher odds of Death rather than Repatriation compared with Sea ranks.
+
+In the all-records model:
+
+- Military odds ratio = 2.60
+- 95% confidence interval = 2.54 to 2.68
+
+In the identifiable-only model:
+
+- Military odds ratio = 2.52
+- 95% confidence interval = 2.44 to 2.60
+
+This means the Military pattern remains very similar when records without a valid `person_cluster_id` are excluded.
+
+This supports the interpretation that the disproportionate Military mortality pattern is not simply produced by missing person identifiers.
+
+The Military x decade interaction is also positive in both models.
+
+Predicted probabilities for a Dutch, non-high-rank reference profile show the same pattern.
+
+In the all-records model:
+
+- Sea rises from about 40.9% in 1700 to 62.1% in 1780.
+- Military rises from about 64.3% in 1700 to 92.5% in 1780.
+
+In the identifiable-only model:
+
+- Sea rises from about 42.3% in 1700 to 63.1% in 1780.
+- Military rises from about 64.9% in 1700 to 93.1% in 1780.
+
+This supports the revised argument about occupationally unequal mortality and persistent workforce vulnerability.
+
+## Step 42: I updated Lorella about the new model results
+
+After running the new model and pushing the outputs to GitHub, I prepared an update for Lorella.
+
+The update explained that the new question-specific model supports the revised framing.
+
+I reported that Military ranks had much higher odds of Death rather than Repatriation compared with Sea ranks:
+
+- odds ratio 2.60 in the all-records model
+- odds ratio 2.52 in the identifiable-only model
+
+I also reported that the predicted probability of Death rose more strongly for Military ranks than for Sea ranks across the eighteenth century.
+
+I explained that the new odds-ratio tables, predicted-probability tables, figure, and model notes were pushed to GitHub.
+
+I also confirmed that I would now start the shared article document based on the revised research question and central argument, and begin collecting literature with DSH in mind.
+
+## Step 43: I updated `03_models.py` to generate the new figure caption
+
+After running Lorella’s question-specific binary logistic model, I needed to update the caption for the new figure:
+
+`figures/fig_question_specific_rank_death_probabilities.png`
+
+At first, I considered adding the caption manually to `docs/figure_captions_revised.txt`. However, to keep the workflow consistent and reproducible, I decided that the caption should be generated by the same script that creates the figure.
+
+I therefore updated `03_models.py` by adding a new helper function:
+
+`write_figure_caption()`
+
+This function writes the caption for `fig_question_specific_rank_death_probabilities.png` to:
+
+`docs/figure_captions_revised.txt`
+
+The function first checks whether the caption already exists. If it does, the script skips writing it again. This prevents duplicate captions when the script is rerun.
+
+I then added the function call to `main()` after the model figure and model notes are generated.
+
+The updated workflow in `03_models.py` now creates:
+
+- question-specific model tables
+- the predicted-probability figure
+- question-specific model notes
+- the caption for the predicted-probability figure
+
+This keeps the figure and its documentation linked to the script that produces them.
+
+## Step 44: I pushed the updated caption-generating model script to GitHub
+
+After updating `03_models.py`, I reran the script.
+
+The script successfully saved:
+
+- the question-specific model tables
+- `figures/fig_question_specific_rank_death_probabilities.png`
+- `docs/question_specific_model_notes.txt`
+- `docs/figure_captions_revised.txt`
+
+I then copied the updated files from my local analysis folder into the actual GitHub repository folder.
+
+The GitHub repository had a newer remote commit, so I ran:
+
+`git pull --rebase origin main`
+
+During the rebase, there was a conflict because the remote version had deleted `03_models.py`, while my local version updated it. Since `03_models.py` is now the active question-specific model script, I kept the updated local version.
+
+After resolving the conflict, I continued the rebase, pushed the commit, and confirmed that the working tree was clean.
+
+This means the repository now contains the updated active `03_models.py` script, and the caption for the question-specific model figure is generated through the script rather than added manually.
+
+## Step 45: I marked the earlier model notes as supplementary
+
+After switching to Lorella’s question-specific binary logistic model, I updated the documentation for the earlier six-category modelling stage.
+
+I added a note at the top of `docs/model_notes_revised.txt`.
+
+This note explains that the file documents the earlier revised six-category modelling stage and that these models are now treated as supplementary diagnostics only.
+
+The reason is that the earlier models predicted individual contract-ending labels across all revised outcome groups. They were useful for checking patterns, but they do not directly answer the current article question about occupationally unequal mortality and workforce vulnerability.
+
+The active article model is now the question-specific binary logistic model comparing Death and Repatriated outcomes.
+
+The active model notes are in:
+
+`docs/question_specific_model_notes.txt`
+
+## Step 46: I marked the earlier model comparison summary as supplementary
+
+I also updated `docs/model_comparison_summary_revised.txt`.
+
+I added a note at the top explaining that this file belongs to the earlier revised six-category modelling stage.
+
+The note clarifies that the earlier Logistic Regression and Random Forest comparison should not be used as central article evidence.
+
+For the current article direction, the relevant model outputs are now:
+
+- `docs/question_specific_model_notes.txt`
+- `tables/question_specific_logit_all_records_odds_ratios.csv`
+- `tables/question_specific_logit_identifiable_only_odds_ratios.csv`
+- `tables/question_specific_logit_all_records_predicted_probabilities.csv`
+- `tables/question_specific_logit_identifiable_only_predicted_probabilities.csv`
+
+This keeps the older modelling work available for transparency, while making clear that the article’s active evidence comes from the question-specific Death versus Repatriated model.
