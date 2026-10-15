@@ -1301,3 +1301,29 @@ The literature search will focus on VOC workforce history, occupational mortalit
 I will use the tracker to distinguish sources that provide historical context from sources that directly support the interpretation of the empirical findings.
 
 The tracker is a working document and will be expanded as I read and evaluate the literature.
+
+## Step 50: I archived the earlier modelling outputs
+
+Following Lorella's feedback, I moved the earlier six-category Logistic Regression and Random Forest outputs into a separate archive folder.
+
+Lorella confirmed that these earlier models will no longer be used for the article and asked me to archive them rather than keep them among the active analysis files.
+
+I created the following folder structure:
+
+- `archive/previous_models/docs/`
+- `archive/previous_models/figures/`
+- `archive/previous_models/tables/`
+
+I moved 22 files using `git mv`:
+
+- 3 model documentation files
+- 6 model figures
+- 13 model tables
+
+These include the earlier six-category models and the sensitivity models without first-contract status.
+
+I kept the current question-specific binary logistic model and its outputs in their original locations. I also left the original course-project model files unchanged for now, to preserve the distinction between the group project and the later article extension.
+
+Git recognized the moved files as renames, preserving their contents and traceability through version history.
+
+The purpose of this change is to keep the active article files separate from the earlier exploratory modelling work without deleting the previous results.
