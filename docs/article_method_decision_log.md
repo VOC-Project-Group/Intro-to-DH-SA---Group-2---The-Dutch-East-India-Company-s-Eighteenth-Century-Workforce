@@ -1278,3 +1278,26 @@ The document structure includes:
 - Conclusion
 
 The purpose of this document is to create a shared writing space for the article draft and to separate the article structure from the older DHBenelux poster/submission structure.
+
+## Step 49: I created a literature tracker for the article
+
+I created a Google Sheets literature tracker to organize the sources for the revised article.
+
+Lorella recommended starting the literature collection early and suggested Digital Scholarship in the Humanities (DSH) as the target journal.
+
+The purpose of the tracker is to keep the literature organized while developing the article, rather than collecting references separately without recording how they relate to the research question.
+
+The tracker will help me record:
+
+- authors and publication years
+- full references and source links
+- literature categories
+- why each source matters for the article
+- which article section it could support
+- reading priority and notes
+
+The literature search will focus on VOC workforce history, occupational mortality, maritime and military labor, repatriation, VOC decline, historical data methods, and Digital Humanities scholarship.
+
+I will use the tracker to distinguish sources that provide historical context from sources that directly support the interpretation of the empirical findings.
+
+The tracker is a working document and will be expanded as I read and evaluate the literature.
