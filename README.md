@@ -1,15 +1,33 @@
-# Intro-to-DH-SA---Group-2---The-Dutch-East-India-Company-s-Eighteenth-Century-Workforce
-
 # VOC Workforce Analysis
 
-This repository contains project files for a Digital Humanities analysis of the Dutch East India Company (VOC) workforce in the eighteenth century.
+This repository documents research on the eighteenth-century workforce of the Dutch East India Company (VOC), developed through a university course project and a subsequent Digital Humanities tutorial/internship at Vrije Universiteit Amsterdam.
 
-The repository has two related parts:
+The project originated as a group assignment for *Introduction to Digital Humanities & Social Analytics*, completed by Group 2.
 
-1. The original course project for *Introduction to Digital Humanities & Social Analytics* at Vrije Universiteit Amsterdam, taught by Lorella Viola.
-2. A revised article-extension analysis developed after the DHBenelux poster presentation.
+The research was subsequently developed further by **Feruza Bakhtiyorova as part of a Digital Humanities tutorial/internship supervised by Dr Lorella Viola** at Vrije Universiteit Amsterdam.
 
-The original course project was completed by Group 2. The revised article-extension analysis is a later continuation that updates the methodology, interpretation, descriptive analysis, and modelling diagnostics.
+## Internship outputs
+
+The Digital Humanities tutorial/internship resulted in two completed research outputs:
+
+### 1. GitHub research repository
+
+The present repository documents the VOC workforce research, including data preparation, methodology, analytical scripts, results, and research decisions.
+
+### 2. DH Benelux research poster
+
+**Workforce Imbalance and Structural Decline: A Data-Driven Analysis of the Dutch East India Company (1700–1780)**
+
+**Authors:** Feruza Bakhtiyorova and Lorella Viola  
+**Institution:** Vrije Universiteit Amsterdam
+
+[View the poster on Zenodo](https://zenodo.org/records/19662396)
+
+The poster presents the findings on occupational composition, recruitment patterns, mortality, and contract outcomes in the eighteenth-century VOC workforce.
+
+The poster and GitHub repository constitute the completed outputs of the Digital Humanities tutorial/internship.
+
+Further development into an academic article may be considered separately.
 
 ## Project background
 
@@ -29,9 +47,15 @@ The original analysis explored whether internal workforce dynamics could reveal 
 
 Some older files in this repository belong to the original course version of the project. They may use earlier terminology, broader outcome categories, or older figure names.
 
-## Revised article-extension analysis
+## Revised analysis developed during the internship
 
-The revised analysis updates the original project to make the method and interpretation more careful.
+
+Following the original course project, the analysis was further developed by Feruza Bakhtiyorova as part of a Digital Humanities tutorial/internship supervised by Dr Lorella Viola.
+
+This work involved revising the methodology, refining the outcome categories, improving the interpretation of workforce patterns, and developing additional descriptive and statistical analyses.
+
+The revised approach addresses methodological limitations identified during the research process and provides a more careful interpretation of the VOC workforce data.
+
 
 The main methodological updates are:
 
@@ -46,24 +70,23 @@ The main methodological updates are:
   - Irregular exit
 - Death and Repatriated are analyzed both separately and together.
 - Missing `person_cluster_id` values are treated as a methodological limitation.
-- Modelling results are treated as diagnostic and supplementary, not as central evidence.
+- Earlier exploratory models are archived. The active question-specific binary logistic model is retained as part of the revised analysis, with its limitations explicitly documented.
 
 ## Current revised interpretation
 
-The revised analysis suggests that the strongest pattern is not simply that the VOC did not recruit enough overall.
 
-Instead, the clearer result is a rank-specific mismatch between first contracts and losses:
+The revised analysis identifies persistent occupational differences in recorded Death and Repatriated contract endings, particularly between Military and Sea ranks.
 
-- Military ranks are consistently overrepresented among Death outcomes compared with their first-contract share.
-- Sea ranks follow a different pattern, especially because Repatriation is much more concentrated among Sea ranks.
-- Mortality and repatriation should be interpreted separately because they reflect different workforce dynamics.
-- First-contract patterns do not map neatly onto all exit types.
+These differences suggest distinct patterns of occupational risk and workforce return that may have created vulnerabilities within the VOC labor system.
 
-The revised article argument therefore focuses on how workforce entry and exit patterns differed by rank and time. We hypothesize that this rank-specific mismatch, especially losses due to death in Military ranks and repatriation in Sea ranks, may have contributed to the VOC’s collapse alongside external factors.
+However, first-contract counts cannot be interpreted as direct replacement rates, and repatriation does not necessarily represent a permanent workforce loss. The available data also do not establish whether these workforce patterns contributed directly to the VOC's eventual collapse.
+
+The revised findings therefore provide a basis for understanding occupationally differentiated workforce vulnerabilities rather than demonstrating a causal explanation for institutional decline.
+
 
 ## Repository structure and key files
 
-This repository contains both the original course project and the revised article-extension analysis.
+This repository preserves the original group course project and documents the subsequent Digital Humanities tutorial/internship supervised by Dr Lorella Viola. It includes the revised analytical workflow, research outputs, methodological documentation, and archived exploratory analyses.
 
 ### `data_raw/`
 
@@ -167,33 +190,28 @@ Main outputs:
 
 This script was used to refine the interpretation from a broad new-workforce-entry claim to a more specific first-contract versus exit-pattern comparison.
 
-#### `14_model_sensitivity_without_first_contract.py`
 
-Runs a sensitivity model without first-contract status.
+### Archived modelling analyses
 
-This checks whether rank, region, decade, Dutch/non-Dutch status, and high-rank status still help separate revised outcome groups when the derived first-contract variable is excluded.
+Earlier exploratory analyses included six-category Logistic Regression and Random Forest models, as well as sensitivity and model-comparison scripts.
 
-Main outputs:
+Following methodological revisions and supervisory feedback, these analyses were separated from the active workflow.
 
-- `tables/model_sensitivity_no_first_contract_class_distribution.csv`
-- `tables/model_sensitivity_no_first_contract_logit_report.csv`
-- `tables/model_sensitivity_no_first_contract_logit_confusion_matrix.csv`
-- `tables/model_sensitivity_no_first_contract_rf_report.csv`
-- `tables/model_sensitivity_no_first_contract_rf_confusion_matrix.csv`
-- `tables/model_sensitivity_no_first_contract_rf_feature_importances.csv`
-- `figures/fig_logit_confusion_matrix_sensitivity_no_first_contract.png`
-- `figures/fig_rf_confusion_matrix_sensitivity_no_first_contract.png`
-- `figures/fig_rf_feature_importance_sensitivity_no_first_contract.png`
-- `docs/model_sensitivity_no_first_contract_notes.txt`
+The archived scripts are:
 
-#### `15_model_comparison_summary.py`
+- `archive/previous_models/scripts/14_model_sensitivity_without_first_contract.py`
+- `archive/previous_models/scripts/15_model_comparison_summary.py`
 
-Creates a compact comparison of the main revised models and sensitivity models.
+The corresponding documentation, figures, and tables are organized under:
 
-Main outputs:
+- `archive/previous_models/docs/`
+- `archive/previous_models/figures/`
+- `archive/previous_models/tables/`
 
-- `tables/model_comparison_summary_revised.csv`
-- `docs/model_comparison_summary_revised.txt`
+These files are retained for transparency and documentation of the research process. They are not part of the current analysis workflow.
+
+The original course-project files remain separately identifiable.
+
 
 ### `docs/`
 
@@ -204,9 +222,7 @@ Most useful revised files:
 - `docs/results_summary_revised.md`
 - `docs/article_method_decision_log.md`
 - `docs/figure_captions_revised.txt`
-- `docs/model_notes_revised.txt`
-- `docs/model_sensitivity_no_first_contract_notes.txt`
-- `docs/model_comparison_summary_revised.txt`
+- `docs/question_specific_model_notes.txt`
 
 Original course documentation may also be present, including:
 
@@ -228,9 +244,10 @@ Key revised tables include:
 - `trend_by_decade_revised.csv`
 - `first_contracts_vs_exits_by_rank_revised.csv`
 - `outcome_rates_and_first_contract_share_by_decade_rank_revised.csv`
-- `model_comparison_summary_revised.csv`
-- `model_rf_feature_importances_revised.csv`
-- `model_sensitivity_no_first_contract_rf_feature_importances.csv`
+- `question_specific_logit_all_records_odds_ratios.csv`
+- `question_specific_logit_identifiable_only_odds_ratios.csv`
+- `question_specific_logit_all_records_predicted_probabilities.csv`
+- `question_specific_logit_identifiable_only_predicted_probabilities.csv`
 
 ### `figures/`
 
@@ -244,19 +261,16 @@ Key revised figures include:
 - `fig_death_rate_and_first_contract_rate_by_decade.png`
 - `fig_first_contracts_vs_exits_by_rank_revised.png`
 - `fig_outcome_rates_and_first_contract_share_by_rank_revised.png`
-- `fig_logit_confusion_matrix_revised.png`
-- `fig_rf_confusion_matrix_revised.png`
-- `fig_rf_feature_importance_revised.png`
-- `fig_rf_feature_importance_sensitivity_no_first_contract.png`
+- `fig_question_specific_rank_death_probabilities.png`
 
-## Most useful revised summary files
+## Most useful research documentation
 
-For a quick overview of the revised analysis, start with:
+For an overview of the completed internship research and subsequent methodological revisions, start with:
 
 - `docs/results_summary_revised.md`
 - `docs/article_method_decision_log.md`
-- `docs/model_comparison_summary_revised.txt`
-- `docs/figure_captions_revised.txt`
+- `docs/question_specific_model_notes.txt`
+- `docs/figure_captions_revised.txt``
 
 ## Data sources
 
@@ -275,45 +289,63 @@ Expected raw files include:
 - `voc_names.csv`
 - `voc_beneficiaries.csv`
 
+
 ## How to run the revised analysis
+
+The current analytical workflow consists of data cleaning, descriptive analysis, question-specific modelling, and first-contract benchmark comparisons.
 
 From the repository root, run:
 
-1. `python 01_cleaning.py`
-2. `python 02_descriptives.py`
-3. `python 03_models.py`
-4. `python 14_model_sensitivity_without_first_contract.py`
-5. `python 15_model_comparison_summary.py`
+```bash
+python 01_cleaning.py
+python 02_descriptives.py
+python 03_models.py
+```
 
-The scripts save outputs to:
+For the additional first-contract and exit-pattern benchmark:
+
+```bash
+python 13_revised_outcome_first_contract_benchmark.py
+```
+
+The scripts use locally available data and write results to the relevant output directories:
 
 - `data_clean/`
 - `tables/`
 - `figures/`
 - `docs/`
 
+Raw VOC data must be provided locally because they are not included in the GitHub repository.
+
+The earlier six-category and sensitivity models are preserved in the archive and are not part of the active workflow.
+
+
 ## Dependencies
 
-See `requirements.txt` for package versions.
+See `requirements.txt` for package dependencies.
 
-Main libraries used include:
+Main libraries used in the current analytical workflow include:
 
 - pandas
 - numpy
 - matplotlib
-- scikit-learn
+- statsmodels
 
-Some earlier project files may also use additional libraries such as statsmodels or lifelines.
+Earlier exploratory analyses also used scikit-learn. Some original project files may require additional dependencies.
+
 
 ## Current status
 
-The revised cleaning, descriptive, modelling, sensitivity, and comparison scripts run successfully.
+The Digital Humanities tutorial/internship has been completed.
 
-The active revised scripts no longer use the old broad outcome grouping or old “death vs recruitment” wording.
+Its two research outputs are the present GitHub repository and the DH Benelux poster presentation.
 
-The most recent revised interpretation is summarized in:
+The repository documents the research workflow, analytical results, methodological revisions, and decisions developed during the project.
 
-- `docs/results_summary_revised.md`
+Earlier exploratory models are preserved separately in the archive for transparency.
+
+Potential future work includes additional historical interpretation, literature review development, and preparation of an academic article. This work is separate from the completed internship.
+
 
 ## Authors - original course project, Group 2
 
@@ -326,6 +358,19 @@ The most recent revised interpretation is summarized in:
 3. Emily Li, History and Sociology  
    Literature research, sustainability focus, and report structure.
 
-## Revised article-extension work
 
-The revised article-extension analysis was continued by Feruza Bakhtiyorova after the original course project and DHBenelux poster presentation, with feedback from Lorella Viola.
+## Digital Humanities tutorial/internship
+
+Following the original group course project, Feruza Bakhtiyorova continued developing the VOC workforce research as part of a **Digital Humanities tutorial/internship supervised by Dr Lorella Viola** at Vrije Universiteit Amsterdam.
+
+The internship involved refining the analytical workflow, revising the methodology, examining occupational mortality and repatriation patterns, and documenting the research process.
+
+The completed internship outputs are:
+
+- The GitHub repository containing the analytical workflow, results, and methodological documentation.
+- The DH Benelux research poster, *Workforce Imbalance and Structural Decline: A Data-Driven Analysis of the Dutch East India Company (1700–1780)*, available on [Zenodo](https://zenodo.org/records/19662396).
+
+The repository preserves the contributions of the original Group 2 course project while distinguishing them from the subsequent work carried out during the tutorial/internship.
+
+Future academic publication may build on this research, but it is separate from the completed internship.
+
